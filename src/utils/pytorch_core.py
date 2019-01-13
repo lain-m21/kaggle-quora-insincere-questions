@@ -1,6 +1,8 @@
 from typing import List, Tuple, Dict, Union, Callable
+import os
 from pathlib import Path
 from tqdm import tqdm
+import random
 import numpy as np
 import torch
 import torch.nn as nn
@@ -10,6 +12,16 @@ from torch.utils.data import DataLoader
 
 from src.utils.logger import Logger
 from src.utils.loss import L2Regulaization
+
+
+def set_seed(seed: int):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
 
 
 def to_gpu(data, output_device):
