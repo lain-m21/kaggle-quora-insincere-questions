@@ -3,6 +3,8 @@ import pandas as pd
 
 from keras.preprocessing.text import Tokenizer
 
+from .preprocess import clean_text, clean_numbers, replace_typical_misspell
+
 
 def load_data(input_dir, logger):
     logger.info('Loading train and test data from {}'.format(input_dir))
@@ -11,6 +13,19 @@ def load_data(input_dir, logger):
     logger.info('Train shape: {}'.format(df_train.shape))
     logger.info('Test shape: {}'.format(df_test.shape))
     return df_train, df_test
+
+
+def preprocess_text(df):
+    df['question_text'] = df['question_text'].apply(
+        lambda x: replace_typical_misspell(
+            clean_numbers(
+                clean_text(
+                    x.lower()
+                )
+            )
+        )
+    )
+    return df
 
 
 def tokenize_text(df, logger, tokenizer=None):
@@ -66,3 +81,7 @@ def load_embeddings(word_index, logger, embed_type=0):
 
 def get_coefs(word, *arr):
     return word, np.asarray(arr, dtype='float32')
+
+
+
+
