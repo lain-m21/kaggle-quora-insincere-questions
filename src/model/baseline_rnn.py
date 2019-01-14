@@ -38,8 +38,8 @@ class StackedRNNFM(nn.Module):
         x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
         x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
-        x_lstm = self.lstm(x_embedding)
-        x_gru = self.gru(x_lstm)
+        x_lstm, _ = self.lstm(x_embedding)
+        x_gru, _ = self.gru(x_lstm)
 
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.lstm_attention(x_gru)
