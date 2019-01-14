@@ -166,7 +166,7 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
 
             optimizer.zero_grad()
             total_loss.backward()
-            optimizer.step(closure=None)
+            optimizer.step()
 
             progress_bar.update(1)
 
