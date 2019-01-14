@@ -41,7 +41,10 @@ def main(logger, args):
 
     label_train = df_train['target'].values
 
-    embedding_matrix = load_embeddings(tokenizer.word_index, logger, embed_type=0)
+    if args['debug']:
+        embedding_matrix = np.random.rand(len(tokenizer.word_index), 300)
+    else:
+        embedding_matrix = load_embeddings(tokenizer.word_index, logger, embed_type=0)
 
     # ===== training and evaluation loop ===== #
     device_ids = args['device_ids']
