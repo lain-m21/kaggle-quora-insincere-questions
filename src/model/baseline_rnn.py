@@ -22,9 +22,6 @@ class StackedRNNFM(nn.Module):
         self.lstm_attention = Attention(hidden_size * 2, seq_len)
         self.gru_attention = Attention(hidden_size * 2, seq_len)
 
-        self.avg_pool = nn.AdaptiveAvgPool1d(1)
-        self.max_pool = nn.AdaptiveMaxPool1d(1)
-
         fm_first_size = hidden_size * 2 * 4
         fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
 
@@ -43,8 +40,8 @@ class StackedRNNFM(nn.Module):
 
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.gru_attention(x_gru)
-        x_avg_pool = self.avg_pool(x_gru)
-        x_max_pool = self.max_pool(x_gru)
+        x_avg_pool = torch.mean(x_gru, 1)
+        x_max_pool, _ = torch.max(x_gru, 1)
 
         fm_first = [
             x_lstm_attention,
