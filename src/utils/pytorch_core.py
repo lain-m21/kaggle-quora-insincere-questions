@@ -10,8 +10,8 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau, _LRScheduler
 from torch.utils.data import DataLoader
 
-from src.utils.logger import Logger
-from src.utils.loss import L2Regulaization
+from .logger import Logger
+from .loss import L2Regulaization
 
 
 def set_seed(seed: int):

@@ -12,13 +12,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from src.utils.logger import Logger
-from src.utils.prepare_data import load_data, tokenize_text, load_embeddings
-from src.utils.pytorch_core import train_model, predict, set_seed
-from src.utils.loader import SimpleDataset
+from utils.logger import Logger
+from utils.prepare_data import load_data, tokenize_text, load_embeddings
+from utils.pytorch_core import train_model, predict, set_seed
+from utils.loader import SimpleDataset
 
-from src.utils.metrics import f1_from_logits, threshold_search
-from src.model.baseline_rnn import StackedRNNFM
+from utils.metrics import f1_from_logits, threshold_search
+from model.baseline_rnn import StackedRNNFM
 
 
 INPUT_DIR = Path.cwd().joinpath('../../input')

@@ -3,7 +3,7 @@ import scipy as sp
 import torch
 import torch.nn as nn
 
-from src.model.common import Attention
+from .common import Attention
 
 
 class StackedRNNFM(nn.Module):
