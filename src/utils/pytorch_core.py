@@ -20,7 +20,7 @@ def set_seed(seed: int):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.deterministic = True
     # torch.backends.cudnn.benchmark = True
 
 
@@ -166,7 +166,7 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
 
             optimizer.zero_grad()
             total_loss.backward()
-            optimizer.step()
+            optimizer.step(closure=None)
 
             progress_bar.update(1)
 
