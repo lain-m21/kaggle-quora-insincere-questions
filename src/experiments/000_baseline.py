@@ -42,7 +42,7 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     if args['debug']:
-        embedding_matrix = np.random.rand(len(tokenizer.word_index), 300)
+        embedding_matrix = np.random.rand(len(tokenizer.word_index), 300).astype(np.float32)
     else:
         embedding_matrix = load_embeddings(tokenizer.word_index, logger, embed_type=0)
 
