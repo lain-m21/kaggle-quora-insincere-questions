@@ -32,8 +32,8 @@ class StackedRNNFM(nn.Module):
 
     def forward(self, inputs):
         x_embedding = self.embedding(inputs)  # B x L x D
-        x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
-        x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
+        # x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
+        # x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
         x_lstm, _ = self.lstm(x_embedding)
         x_gru, _ = self.gru(x_lstm)
