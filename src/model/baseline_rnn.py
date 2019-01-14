@@ -7,7 +7,7 @@ from .common import Attention
 
 
 class StackedRNNFM(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, hidden_size=40):
+    def __init__(self, embedding_matrix, seq_len, hidden_size=64):
         super(StackedRNNFM, self).__init__()
 
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
