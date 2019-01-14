@@ -7,7 +7,7 @@ from .common import Attention
 
 
 class StackedRNNFM(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, hidden_size=40):
+    def __init__(self, embedding_matrix, seq_len, hidden_size=40, device=0):
         super(StackedRNNFM, self).__init__()
 
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
@@ -30,13 +30,30 @@ class StackedRNNFM(nn.Module):
         self.dropout = nn.Dropout(0.2)
         self.output_layer = nn.Linear(32, 1)
 
+        self.hidden_set = False
+        self.h_0_lstm = None
+        self.c_0_lstm = None
+        self.h_0_gru = None
+
+    def _init_hidden(self, x):
+        self.h_0_lstm = torch.zeros((2, x.size()[0], 40))
+        self.c_0_lstm = torch.zeros((2, x.size()[0], 40))
+        self.h_0_gru = torch.zeros((2, x.size()[0], 40))
+        self.h_0_lstm.to(x.device)
+        self.c_0_lstm.to(x.device)
+        self.h_0_gru.to(x.device)
+        self.hidden_set = True
+
     def forward(self, inputs):
         x_embedding = self.embedding(inputs)  # B x L x D
         x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
         x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
-        x_lstm, _ = self.lstm(x_embedding)
-        x_gru, _ = self.gru(x_lstm)
+        if not self.hidden_set:
+            self._init_hidden(x_embedding)
+
+        x_lstm, _ = self.lstm(x_embedding, self.h_0_lstm, self.c_0_lstm)
+        x_gru, _ = self.gru(x_lstm, self.h_0_gru)
 
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.gru_attention(x_gru)
