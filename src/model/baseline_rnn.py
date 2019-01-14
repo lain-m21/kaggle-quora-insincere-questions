@@ -52,7 +52,7 @@ class StackedRNNFM(nn.Module):
         if not self.hidden_set:
             self._init_hidden(x_embedding)
 
-        x_lstm, _ = self.lstm(x_embedding, self.h_0_lstm, self.c_0_lstm)
+        x_lstm, _ = self.lstm(x_embedding, (self.h_0_lstm, self.c_0_lstm))
         x_gru, _ = self.gru(x_lstm, self.h_0_gru)
 
         x_lstm_attention = self.lstm_attention(x_lstm)
