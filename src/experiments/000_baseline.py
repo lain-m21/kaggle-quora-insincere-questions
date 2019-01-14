@@ -37,7 +37,7 @@ def main(logger, args):
     seq_train, tokenizer = tokenize_text(df_train, logger)
 
     logger.info('Pad train text data')
-    seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH).astype(int)
+    seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
@@ -61,8 +61,8 @@ def main(logger, args):
     skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
     oof_preds = np.zeros(seq_train.shape[0])
     for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
-        x_train, x_valid = seq_train[index_train], seq_train[index_valid]
-        y_train, y_valid = label_train[index_train], label_train[index_valid]
+        x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
+        y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
         dataset_train = SimpleDataset(x_train, y_train)
         dataset_valid = SimpleDataset(x_valid, y_valid)
