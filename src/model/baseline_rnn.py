@@ -36,12 +36,9 @@ class StackedRNNFM(nn.Module):
         self.h_0_gru = None
 
     def _init_hidden(self, x):
-        self.h_0_lstm = torch.zeros((2, x.size()[0], 40))
-        self.c_0_lstm = torch.zeros((2, x.size()[0], 40))
-        self.h_0_gru = torch.zeros((2, x.size()[0], 40))
-        self.h_0_lstm.to(x.device)
-        self.c_0_lstm.to(x.device)
-        self.h_0_gru.to(x.device)
+        self.h_0_lstm = torch.zeros((2, x.size()[0], 40)).to(x.device)
+        self.c_0_lstm = torch.zeros((2, x.size()[0], 40)).to(x.device)
+        self.h_0_gru = torch.zeros((2, x.size()[0], 40)).to(x.device)
         self.hidden_set = True
 
     def forward(self, inputs):
