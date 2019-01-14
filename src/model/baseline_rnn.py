@@ -30,27 +30,17 @@ class StackedRNNFM(nn.Module):
         self.dropout = nn.Dropout(0.2)
         self.output_layer = nn.Linear(32, 1)
 
-        self.hidden_set = False
-        self.h_0_lstm = None
-        self.c_0_lstm = None
-        self.h_0_gru = None
-
-    def _init_hidden(self, x):
-        self.h_0_lstm = torch.zeros((2, x.size()[0], 40)).to(x.device)
-        self.c_0_lstm = torch.zeros((2, x.size()[0], 40)).to(x.device)
-        self.h_0_gru = torch.zeros((2, x.size()[0], 40)).to(x.device)
-        self.hidden_set = True
-
     def forward(self, inputs):
         x_embedding = self.embedding(inputs)  # B x L x D
         x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
         x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
-        if not self.hidden_set:
-            self._init_hidden(x_embedding)
-
-        x_lstm, _ = self.lstm(x_embedding, (self.h_0_lstm, self.c_0_lstm))
-        x_gru, _ = self.gru(x_lstm, self.h_0_gru)
+        x_lstm, _ = self.lstm(x_embedding)
+        try:
+            x_gru, _ = self.gru(x_lstm)
+        except:
+            import IPython
+            IPython.embed()
 
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.gru_attention(x_gru)
