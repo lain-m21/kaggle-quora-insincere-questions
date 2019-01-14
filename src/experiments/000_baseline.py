@@ -1,10 +1,10 @@
+import sys; sys.path.append('..')
 import json
 import argparse
 from pathlib import Path
 import numpy as np
 import scipy as sp
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score
 from keras.preprocessing.sequence import pad_sequences
 
 import torch
