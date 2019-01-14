@@ -65,6 +65,7 @@ def main(logger, args):
     skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
     oof_preds = np.zeros(seq_train.shape[0])
     for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
+        logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
         x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
         y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
@@ -103,7 +104,7 @@ def main(logger, args):
             'metric_type': 'batch',
             'model_save_path': model_save_path,
             'output_device': output_device,
-            'mode': 'min',
+            'mode': 'max',
             'early_stopping': 200,
             'model_name': model_name,
             'reg_lambda': None,
