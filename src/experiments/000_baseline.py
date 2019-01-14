@@ -39,7 +39,7 @@ def main(logger, args):
     logger.info('Pad train text data')
     seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH).astype(int)
 
-    label_train = df_train['target'].values
+    label_train = df_train['target'].values.reshape(-1, 1)
 
     if args['debug']:
         embedding_matrix = np.random.rand(len(tokenizer.word_index), 300)
@@ -121,7 +121,7 @@ def main(logger, args):
         oof_preds[index_valid] = sp.special.expit(predict(model, dataloader_valid, config).reshape(-1,))
 
     logger.info('Training and evaluation loop has been done. Start f1 threshold search.')
-    search_result = threshold_search(label_train, oof_preds)
+    search_result = threshold_search(label_train.reshape(-1,), oof_preds)
     logger.post(f'Threshold search result - f1: {search_result["f1"]}, threshold: {search_result["threshold"]}')
 
 
