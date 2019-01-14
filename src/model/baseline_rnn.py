@@ -11,7 +11,7 @@ class StackedRNNFM(nn.Module):
         super(StackedRNNFM, self).__init__()
 
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
-        self.embedding.load_state_dict({'weight': embedding_matrix})
+        self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
         self.embedding.weight.requires_grad = False
 
         self.embedding_dropout = nn.Dropout2d(0.1)
