@@ -85,7 +85,7 @@ def main(logger, args):
         model.to(output_device)
 
         criteria = [
-            [nn.BCEWithLogitsLoss(reduction='mean')]
+            [nn.BCEWithLogitsLoss(reduction='mean')], [1.0]
         ]
         metric = f1_from_logits
         optimizer = optim.Adam(model.parameters(), lr=0.001)
