@@ -106,7 +106,7 @@ def main(logger, args):
             'mode': 'min',
             'early_stopping': 200,
             'model_name': model_name,
-            'reg_lambda': 0.0,
+            'reg_lambda': None,
             'fold': fold
         }
 
