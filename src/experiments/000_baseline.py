@@ -55,6 +55,10 @@ def main(logger, args):
 
     batch_size = args['batch_size'] * len(device_ids)
     max_workers = args['max_workers']
+    if args['debug']:
+        epochs = 2
+    else:
+        epochs = EPOCHS
 
     logger.info('Start training and evaluation loop')
 
@@ -94,7 +98,7 @@ def main(logger, args):
         model_save_path = str(DATA_DIR.joinpath(f'models/{Path(__file__).stem}_fold_{fold}.model'))
         model_name = model._get_name()
         config = {
-            'epochs': EPOCHS,
+            'epochs': epochs,
             'loss_names': ['BCE Loss'],
             'metric_type': 'batch',
             'model_save_path': model_save_path,
