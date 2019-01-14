@@ -35,3 +35,7 @@ Might be effective.
 - [ ] Pre-processing of text
 
 Try this kernel - https://www.kaggle.com/theoviel/improve-your-score-with-some-text-preprocessing
+
+- [ ] Pseudo-labeling
+
+Test data is small, but the 2nd stage data set is fairly large enough to carry on pseudo-labeling.
