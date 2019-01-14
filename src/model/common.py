@@ -37,3 +37,23 @@ class Attention(nn.Module):
 
         weighted_inputs = inputs * torch.unsqueeze(a, -1)
         return torch.sum(weighted_inputs, 1)
+
+
+class MultiheadAttention(nn.Module):
+    def __init__(self, hidden_dim, head_num, dropout_rate):
+        super(MultiheadAttention, self).__init__()
+
+        self.hidden_dim = hidden_dim
+        self.head_num = head_num
+        self.dropout_rate = dropout_rate
+
+        self.q_dense_layer = nn.Linear(_, hidden_dim, bias=False)
+        self.k_dense_layer = nn.Linear(_, hidden_dim, bias=False)
+        self.v_dense_layer = nn.Linear(_, hidden_dim, bias=False)
+        self.output_layer = nn.Linear(_, hidden_dim, bias=False)
+        self.attention_dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, inputs, memory, mask):
+        q = self.q_dense_layer(inputs)  # [batch_size, q_length, hidden_dim]
+        k = self.k_dense_layer(memory)  # [batch_size, m_length, hidden_dim]
+        v = self.v_dense_layer(memory)  # [batch_size, m_length, hidden_dim]
