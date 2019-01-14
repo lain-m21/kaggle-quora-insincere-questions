@@ -25,18 +25,12 @@ def set_seed(seed: int):
 
 
 def to_gpu(data, output_device):
-    # if isinstance(data, list):
-    #     data = [x.to(output_device) for x in data]
-    # elif isinstance(data, dict):
-    #     data = dict([(key, to_gpu(x, output_device)) for (key, x) in data.items()])
-    # else:
-    #     data = data.to(output_device)
     if isinstance(data, list):
-        data = [x.cuda() for x in data]
+        data = [x.to(output_device) for x in data]
     elif isinstance(data, dict):
         data = dict([(key, to_gpu(x, output_device)) for (key, x) in data.items()])
     else:
-        data = data.cuda()
+        data = data.to(output_device)
     return data
 
 
