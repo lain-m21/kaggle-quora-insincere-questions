@@ -37,7 +37,7 @@ def main(logger, args):
     seq_train, tokenizer = tokenize_text(df_train, logger)
 
     logger.info('Pad train text data')
-    seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
+    seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH).astype(int)
 
     label_train = df_train['target'].values
 
