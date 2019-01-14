@@ -89,7 +89,6 @@ def train_model(model: nn.Module, criteria: List[List], metric: Callable, optimi
             logger.add_scalars(loss_name, {f'train_{fold}': train_loss, f'valid_{fold}': valid_loss}, epoch)
 
         logger.add_scalars('metric', {'train': train_metric, 'valid': valid_metric}, epoch)
-        logger.add_weight_histogram(model, epoch, model_name)
 
         if scheduler:
             if isinstance(scheduler, ReduceLROnPlateau):
