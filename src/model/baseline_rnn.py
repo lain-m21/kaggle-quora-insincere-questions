@@ -42,7 +42,7 @@ class StackedRNNFM(nn.Module):
         x_gru, _ = self.gru(x_lstm)
 
         x_lstm_attention = self.lstm_attention(x_lstm)
-        x_gru_attention = self.lstm_attention(x_gru)
+        x_gru_attention = self.gru_attention(x_gru)
         x_avg_pool = self.avg_pool(x_gru)
         x_max_pool = self.max_pool(x_gru)
 
