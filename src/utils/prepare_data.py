@@ -64,7 +64,7 @@ def load_embeddings(word_index, logger, embed_type=0):
     emb_mean, emb_std = all_embs.mean(), all_embs.std()
     embed_size = all_embs.shape[1]
 
-    nb_words = len(word_index)
+    nb_words = len(word_index) + 1
     embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size)).astype(np.float32)
     logger.info('Filling embedding matrix')
     for word, i in word_index.items():

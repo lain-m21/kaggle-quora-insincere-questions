@@ -145,9 +145,6 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
         for i, (inputs, targets) in enumerate(dataloader):
             inputs = to_gpu(inputs, output_device)
             targets = to_gpu(targets, output_device)
-            if progress_bar.n == 261:
-                import IPython
-                IPython.embed()
             outputs = model(inputs)
 
             total_loss = 0
