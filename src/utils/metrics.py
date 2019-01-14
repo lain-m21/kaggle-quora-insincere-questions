@@ -1,11 +1,19 @@
 from tqdm import tqdm
+import numpy as np
+import scipy as sp
 from sklearn.metrics import f1_score
+import torch.nn as nn
 
 
-def f1(outputs, targets, threshold=0.5):
-    outputs = outputs.cpu().numpy().reshape(-1,)
-    targets = targets.cpu().numpy().reshape(-1,)
-    return f1_score(outputs, targets > threshold)
+def f1_from_logits(outputs: np.ndarray, targets: np.ndarray, threshold: float=0.5):
+    outputs = outputs.reshape(-1,)
+    targets = targets.reshape(-1,).astype(int)
+    return f1_score(targets, sp.special.expit(outputs) > threshold)
+
+
+def bce_from_logits(outputs, targets):
+    bce_loss = nn.BCEWithLogitsLoss(reduction='mean')
+    return bce_loss(outputs.detach(), targets.detach()).item()
 
 
 def threshold_search(y_true, y_pred):

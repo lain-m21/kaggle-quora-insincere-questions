@@ -36,11 +36,11 @@ def to_gpu(data, output_device):
 
 def to_cpu(data):
     if isinstance(data, list):
-        data = [x.cpu().numpy() for x in data]
+        data = [x.detach().cpu().numpy() for x in data]
     elif isinstance(data, dict):
         data = dict([(key, to_cpu(x)) for (key, x) in data.items()])
     else:
-        data = data.cpu().numpy()
+        data = data.detach().cpu().numpy()
     return data
 
 
@@ -50,6 +50,7 @@ def train_model(model: nn.Module, criteria: List[List], metric: Callable, optimi
     epochs = config['epochs']
     loss_names = config['loss_names']
     metric_type = config['metric_type']
+    fold = config['fold']
     model_save_path = config['model_save_path']
     mode = config['mode']  # min or max
     early_stopping = config['early_stopping']
@@ -85,7 +86,7 @@ def train_model(model: nn.Module, criteria: List[List], metric: Callable, optimi
         logger.info(message)
 
         for loss_name, train_loss, valid_loss in zip(loss_names, train_losses, valid_losses):
-            logger.add_scalars(loss_name, {'train': train_loss, 'valid': valid_loss}, epoch)
+            logger.add_scalars(loss_name, {f'train_{fold}': train_loss, f'valid_{fold}': valid_loss}, epoch)
 
         logger.add_scalars('metric', {'train': train_metric, 'valid': valid_metric}, epoch)
         logger.add_weight_histogram(model, epoch, model_name)
@@ -158,10 +159,10 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
                 total_loss += l2_loss(model)
 
             if metric_type == 'cumulative':
-                train_metric += metric(outputs, targets) / n_iter
+                train_metric += metric(outputs, ) / n_iter
             else:
-                outputs_total.append(outputs)
-                targets_total.append(targets)
+                outputs_total.append(to_cpu(outputs))
+                targets_total.append(to_cpu(targets))
 
             optimizer.zero_grad()
             total_loss.backward()
@@ -170,8 +171,8 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
             progress_bar.update(1)
 
     if metric_type != 'cumulative':
-        outputs_total = torch.cat(outputs_total)
-        targets_total = torch.cat(targets_total)
+        outputs_total = np.concatenate(outputs_total, axis=0)
+        targets_total = np.concatenate(targets_total, axis=0)
         train_metric = metric(outputs_total, targets_total)
 
     return model, train_losses, train_metric
@@ -200,13 +201,13 @@ def validate_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, 
             if metric_type == 'cumulative':
                 valid_metric += metric(outputs, targets) / n_iter
             else:
-                outputs_total.append(outputs)
-                targets_total.append(targets)
+                outputs_total.append(to_cpu(outputs))
+                targets_total.append(to_cpu(targets))
             progress_bar.update(1)
 
     if metric_type != 'cumulative':
-        outputs_total = torch.cat(outputs_total)
-        targets_total = torch.cat(targets_total)
+        outputs_total = np.concatenate(outputs_total, axis=0)
+        targets_total = np.concatenate(targets_total, axis=0)
         valid_metric = metric(outputs_total, targets_total)
 
     return model, valid_losses, valid_metric
