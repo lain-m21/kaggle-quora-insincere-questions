@@ -145,8 +145,11 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
         for i, (inputs, targets) in enumerate(dataloader):
             inputs = to_gpu(inputs, output_device)
             targets = to_gpu(targets, output_device)
-            outputs = model(inputs)
-
+            try:
+                outputs = model(inputs)
+            except:
+                import IPython
+                IPython.embed()
             total_loss = 0
             for j, (criterion, coeff) in enumerate(zip(criteria[0], criteria[1])):
                 loss = coeff * criterion(outputs, targets)

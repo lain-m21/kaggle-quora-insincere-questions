@@ -88,9 +88,6 @@ def main(logger, args):
         model = StackedRNNFM(embedding_matrix, PADDING_LENGTH, hidden_size=64)
         model.to(output_device)
 
-        import IPython
-        IPython.embed()
-
         criteria = [
             [nn.BCEWithLogitsLoss(reduction='mean')], [1.0]
         ]

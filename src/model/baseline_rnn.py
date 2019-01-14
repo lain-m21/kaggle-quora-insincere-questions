@@ -31,12 +31,17 @@ class StackedRNNFM(nn.Module):
         self.output_layer = nn.Linear(32, 1)
 
     def forward(self, inputs):
-        x_embedding = self.embedding(inputs)  # B x L x D
-        x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
-        x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
+        try:
+            x_embedding = self.embedding(inputs)  # B x L x D
+            x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
+            x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
-        x_lstm, _ = self.lstm(x_embedding)
-        x_gru, _ = self.gru(x_lstm)
+            x_lstm, _ = self.lstm(x_embedding)
+            x_gru, _ = self.gru(x_lstm)
+        except Exception as e:
+            import IPython
+            IPython.embed()
+            raise e
 
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.gru_attention(x_gru)
