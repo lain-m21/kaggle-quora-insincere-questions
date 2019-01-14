@@ -7,7 +7,7 @@ from .common import Attention
 
 
 class StackedRNNFM(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, hidden_size=40, device=0):
+    def __init__(self, embedding_matrix, seq_len, hidden_size=40):
         super(StackedRNNFM, self).__init__()
 
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
@@ -16,11 +16,11 @@ class StackedRNNFM(nn.Module):
 
         self.embedding_dropout = nn.Dropout2d(0.1)
 
-        self.gru_1 = nn.GRU(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
-        self.gru_2 = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
+        self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
+        self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
 
-        self.gru_attention_1 = Attention(hidden_size * 2, seq_len)
-        self.gru_attention_2 = Attention(hidden_size * 2, seq_len)
+        self.lstm_attention = Attention(hidden_size * 2, seq_len)
+        self.gru_attention = Attention(hidden_size * 2, seq_len)
 
         fm_first_size = hidden_size * 2 * 4
         fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
@@ -35,17 +35,17 @@ class StackedRNNFM(nn.Module):
         x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
         x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
-        x_gru_1, _ = self.gru_1(x_embedding)
-        x_gru_2, _ = self.gru_2(x_gru_1)
+        x_lstm, _ = self.lstm(x_embedding)
+        x_gru, _ = self.gru(x_lstm)
 
-        x_gru_1_attention = self.gru_attention_1(x_gru_1)
-        x_gru_2_attention = self.gru_attention_2(x_gru_2)
-        x_avg_pool = torch.mean(x_gru_2, 1)
-        x_max_pool, _ = torch.max(x_gru_2, 1)
+        x_lstm_attention = self.lstm_attention(x_lstm)
+        x_gru_attention = self.gru_attention(x_gru)
+        x_avg_pool = torch.mean(x_gru, 1)
+        x_max_pool, _ = torch.max(x_gru, 1)
 
         fm_first = [
-            x_gru_1_attention,
-            x_gru_2_attention,
+            x_lstm_attention,
+            x_gru_attention,
             x_avg_pool,
             x_max_pool
         ]

@@ -158,7 +158,7 @@ def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, met
                 total_loss += l2_loss(model)
 
             if metric_type == 'cumulative':
-                train_metric += metric(outputs, ) / n_iter
+                train_metric += metric(outputs, targets) / n_iter
             else:
                 outputs_total.append(to_cpu(outputs))
                 targets_total.append(to_cpu(targets))
