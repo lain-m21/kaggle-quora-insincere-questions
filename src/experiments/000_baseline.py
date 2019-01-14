@@ -85,7 +85,7 @@ def main(logger, args):
         )
         dataloaders = {'train': dataloader_train, 'valid': dataloader_valid}
 
-        model = StackedRNNFM(embedding_matrix, PADDING_LENGTH, hidden_size=32)
+        model = StackedRNNFM(embedding_matrix, PADDING_LENGTH, hidden_size=64)
         model.to(output_device)
 
         criteria = [
