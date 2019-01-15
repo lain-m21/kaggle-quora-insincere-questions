@@ -494,6 +494,7 @@ class StackedRNNFM(nn.Module):
 def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_device, batch_size, logger):
 
     test_preds = np.zeros(seq_test.shape[0])
+    torch.set_num_threads(1)
 
     with logger.timer('Dataloader preparation'):
         x_train, x_test = seq_train.astype(int), seq_test.astype(int)
