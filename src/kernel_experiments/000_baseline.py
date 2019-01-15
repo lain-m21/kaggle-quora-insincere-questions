@@ -24,6 +24,8 @@ from torch.utils.data import dataset, DataLoader
 
 from utils.logger import Logger
 
+os.environ['OMP_NUM_THREADS'] = '1'
+
 INPUT_DIR = Path.cwd().joinpath('../../input')
 DATA_DIR = Path.cwd().joinpath('../../data')
 SUBMIT_DIR = Path.cwd().joinpath('../../data')
