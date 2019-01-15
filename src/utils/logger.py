@@ -24,6 +24,7 @@ class Logger:
                  webhook_url: str,
                  overwrite: bool=True,
                  tensorboard: bool=True):
+
         self._logger = getLogger(logger_name)
         if log_dir.exists():
             if overwrite:
