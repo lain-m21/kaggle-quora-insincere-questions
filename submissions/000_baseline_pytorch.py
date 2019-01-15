@@ -22,7 +22,7 @@ from torch.utils.data import dataset, DataLoader
 
 INPUT_DIR = Path.cwd().joinpath('../input')
 DATA_DIR = Path.cwd().joinpath('../../data')
-SUBMIT_DIR = Path.cwd().joinpath('../input')
+SUBMIT_DIR = Path.cwd()
 
 SEED = 42
 PADDING_LENGTH = 60
