@@ -10,7 +10,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from logging import getLogger, StreamHandler, Formatter
 from functools import partial
-from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 import scipy as sp
@@ -26,6 +25,7 @@ from torch.utils.data import dataset, DataLoader
 
 from utils.logger import Logger
 
+torch.multiprocessing.set_start_method('spawn')
 
 INPUT_DIR = Path.cwd().joinpath('../../input')
 DATA_DIR = Path.cwd().joinpath('../../data')
@@ -576,7 +576,7 @@ def main(logger, args):
 
     _logger = SimpleLogger()
 
-    with Pool(processes=max_workers) as p, logger.timer('Seed averaging'):
+    with torch.multiprocessing.Pool(processes=max_workers) as p, logger.timer('Seed averaging'):
         results = p.map(partial(train,
                                 seq_train=seq_train,
                                 seq_test=seq_test,
@@ -594,7 +594,7 @@ def main(logger, args):
 
     with logger.timer('Make submission'):
         submission = pd.read_csv(INPUT_DIR.joinpath('sample_submission.csv'))
-        submission.prediction = test_preds > 0.33
+        submission.prediction = test_preds > THRESHOLD
         submission.to_csv(SUBMIT_DIR.joinpath('submission.csv'), index=False)
 
 
