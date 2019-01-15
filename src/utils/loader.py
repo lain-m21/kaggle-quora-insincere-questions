@@ -1,4 +1,5 @@
 from collections import defaultdict
+import numpy as np
 import torch
 from torch.utils.data import dataset, sampler
 
@@ -8,6 +9,10 @@ def collate_dict(inputs, index):
         return dict([(key, collate_dict(item, index)) for key, item in inputs.items()])
     else:
         return inputs[index]
+
+
+def worker_init_fn(worker_id):
+    np.random.seed(np.random.get_state()[1][0] + worker_id)
 
 
 class SimpleDataset(dataset.Dataset):

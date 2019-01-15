@@ -224,6 +224,10 @@ def collate_dict(inputs, index):
         return inputs[index]
 
 
+def worker_init_fn(worker_id):
+    np.random.seed(np.random.get_state()[1][0] + worker_id)
+
+
 class SimpleDataset(dataset.Dataset):
     def __init__(self, X, y=None):
         self.X = X
@@ -488,6 +492,8 @@ class StackedRNNFM(nn.Module):
 def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_device, batch_size, logger):
     test_preds = np.zeros(seq_test.shape[0])
 
+    np.random.seed(seed)
+
     with logger.timer('Dataloader preparation'):
         x_train, x_test = seq_train.astype(int), seq_test.astype(int)
         y_train = label_train.astype(np.float32)
@@ -499,7 +505,8 @@ def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_devic
             dataset=dataset_train,
             batch_size=batch_size,
             shuffle=True,
-            pin_memory=True
+            pin_memory=True,
+            worker_init_fn=worker_init_fn
         )
         dataloader_test = DataLoader(
             dataset=dataset_test,
@@ -527,8 +534,6 @@ def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_devic
             'output_device': output_device,
             'reg_lambda': None,
         }
-
-    set_seed(seed)
 
     with logger.timer('Train model'):
         model = train_model(model, criteria, metric, optimizer, scheduler, dataloader_train, logger, config)
@@ -567,6 +572,7 @@ def main(logger, args):
 
         batch_size = args['batch_size'] * len(device_ids)
         max_workers = args['max_workers']
+        set_seed(SEED)
 
     _logger = SimpleLogger()
 
