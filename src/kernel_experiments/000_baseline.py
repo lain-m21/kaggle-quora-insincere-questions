@@ -308,9 +308,10 @@ def train_model(model, criteria, metric, optimizer, scheduler, dataloader, logge
 
     for epoch in range(1, epochs + 1):
         logger.info(f'Epoch {epoch:d} / {epochs:d}')
-        logger.info(f'Training phase starts.\n')
-        model, train_losses, train_metric = train_on_epoch(model, criteria, metric, metric_type,
-                                                           optimizer, dataloader, config)
+        logger.info('Training phase starts.')
+        with logger.timer('Training phase'):
+            model, train_losses, train_metric = train_on_epoch(model, criteria, metric, metric_type,
+                                                               optimizer, dataloader, config)
 
         message = f'Training phase has been done. Epoch {epoch:d} / {epochs:d} results:\n'
         message += 'Train - ' + ', '.join([f'{name}: {loss:.5f}' for name, loss in zip(loss_names, train_losses)])
