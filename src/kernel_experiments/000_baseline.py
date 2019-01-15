@@ -130,16 +130,13 @@ def get_seq_length(sequence):
     return np.array([len(x) for x in sequence])
 
 
-def load_embeddings(word_index, logger, embed_type=0):
+def load_embeddings(embed_type, word_index):
     if embed_type == 0:
         embedding_file = '../../input/embeddings/glove.840B.300d/glove.840B.300d.txt'
-        logger.info('Loading Glove embeddings')
     elif embed_type == 1:
         embedding_file = '../../input/embeddings/wiki-news-300d-1M/wiki-news-300d-1M.vec'
-        logger.info('Loading fastText embeddings')
     else:
         embedding_file = '../../input/embeddings/paragram_300_sl999/paragram_300_sl999.txt'
-        logger.info('Loading Paragram embeddings')
 
     embeddings_index = dict(get_coefs(*o.split(" ")) for o in open(embedding_file, encoding="utf8", errors='ignore')
                             if len(o) > 100)
@@ -150,15 +147,12 @@ def load_embeddings(word_index, logger, embed_type=0):
 
     nb_words = len(word_index) + 1
     embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size)).astype(np.float32)
-    logger.info('Filling embedding matrix')
     for word, i in word_index.items():
         if i >= nb_words:
             continue
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
-
-    logger.info('Loading completed')
 
     return embedding_matrix
 
@@ -486,7 +480,7 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     with logger.timer('Load embeddings'):
-        embedding_matrix = load_embeddings(tokenizer.word_index, logger, embed_type=0)
+        embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
 
     # ===== training and evaluation loop ===== #
 

@@ -41,10 +41,11 @@ def main(logger, args):
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
+    logger.info('Load glove embeddings')
     if args['debug']:
         embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300).astype(np.float32)
     else:
-        embedding_matrix = load_embeddings(tokenizer.word_index, logger, embed_type=0)
+        embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
 
     # ===== training and evaluation loop ===== #
     device_ids = args['device_ids']
