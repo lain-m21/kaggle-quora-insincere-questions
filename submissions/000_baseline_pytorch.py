@@ -149,13 +149,13 @@ def get_seq_length(sequence):
 
 def load_embeddings(embed_type, word_index):
     if embed_type == 0:
-        embedding_file = '../../input/embeddings/glove.840B.300d/glove.840B.300d.txt'
+        embedding_file = INPUT_DIR.joinpath('embeddings/glove.840B.300d/glove.840B.300d.txt')
     elif embed_type == 1:
-        embedding_file = '../../input/embeddings/wiki-news-300d-1M/wiki-news-300d-1M.vec'
+        embedding_file = INPUT_DIR.joinpath('embeddings/wiki-news-300d-1M/wiki-news-300d-1M.vec')
     else:
-        embedding_file = '../../input/embeddings/paragram_300_sl999/paragram_300_sl999.txt'
+        embedding_file = INPUT_DIR.joinpath('embeddings/paragram_300_sl999/paragram_300_sl999.txt')
 
-    embeddings_index = dict(get_coefs(*o.split(" ")) for o in open(embedding_file, encoding="utf8", errors='ignore')
+    embeddings_index = dict(get_coefs(*o.split(" ")) for o in embedding_file.open(encoding='utf8', errors='ignore')
                             if len(o) > 100)
 
     all_embs = np.stack(embeddings_index.values())
