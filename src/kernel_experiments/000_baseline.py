@@ -6,6 +6,7 @@ import random
 import argparse
 import itertools
 from pathlib import Path
+from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 import scipy as sp
@@ -489,57 +490,65 @@ def main(logger, args):
         output_device = device_ids[0]
         torch.cuda.set_device(device_ids[0])
 
-        set_seed(SEED)
-
         batch_size = args['batch_size'] * len(device_ids)
         max_workers = args['max_workers']
+
+    def train(seed):
         test_preds = np.zeros(seq_test.shape[0])
+        set_seed(seed)
 
-    with logger.timer('Dataloader preparation'):
-        x_train, x_test = seq_train.astype(int), seq_test.astype(int)
-        y_train = label_train.astype(np.float32)
+        with logger.timer('Dataloader preparation'):
+            x_train, x_test = seq_train.astype(int), seq_test.astype(int)
+            y_train = label_train.astype(np.float32)
 
-        dataset_train = SimpleDataset(x_train, y_train)
-        dataset_test = SimpleDataset(x_test)
+            dataset_train = SimpleDataset(x_train, y_train)
+            dataset_test = SimpleDataset(x_test)
 
-        dataloader_train = DataLoader(
-            dataset=dataset_train,
-            batch_size=batch_size,
-            shuffle=True,
-            pin_memory=True
-        )
-        dataloader_test = DataLoader(
-            dataset=dataset_test,
-            batch_size=batch_size,
-            shuffle=False,
-            pin_memory=True
-        )
+            dataloader_train = DataLoader(
+                dataset=dataset_train,
+                batch_size=batch_size,
+                shuffle=True,
+                pin_memory=True
+            )
+            dataloader_test = DataLoader(
+                dataset=dataset_test,
+                batch_size=batch_size,
+                shuffle=False,
+                pin_memory=True
+            )
 
-    with logger.timer('Build NN model'):
-        model = StackedRNNFM(embedding_matrix, PADDING_LENGTH, hidden_size=64)
-        model.to(output_device)
+        with logger.timer('Build NN model'):
+            model = StackedRNNFM(embedding_matrix, PADDING_LENGTH, hidden_size=64)
+            model.to(output_device)
 
-    with logger.timer('Model training preparation - loss and optimizer'):
-        criteria = [
-            [nn.BCEWithLogitsLoss(reduction='mean')], [1.0]
-        ]
-        metric = f1_from_logits
-        optimizer = optim.Adam(model.parameters(), lr=0.001)
-        scheduler = None
+        with logger.timer('Model training preparation - loss and optimizer'):
+            criteria = [
+                [nn.BCEWithLogitsLoss(reduction='mean')], [1.0]
+            ]
+            metric = f1_from_logits
+            optimizer = optim.Adam(model.parameters(), lr=0.001)
+            scheduler = None
 
-        config = {
-            'epochs': EPOCHS,
-            'loss_names': ['BCE Loss'],
-            'metric_type': 'batch',
-            'output_device': output_device,
-            'reg_lambda': None,
-        }
+            config = {
+                'epochs': EPOCHS,
+                'loss_names': ['BCE Loss'],
+                'metric_type': 'batch',
+                'output_device': output_device,
+                'reg_lambda': None,
+            }
 
-    with logger.timer('Train model'):
-        model = train_model(model, criteria, metric, optimizer, scheduler, dataloader_train, logger, config)
+        with logger.timer('Train model'):
+            model = train_model(model, criteria, metric, optimizer, scheduler, dataloader_train, logger, config)
 
-    with logger.timer('Predict test data'):
-        test_preds += sp.special.expit(predict(model, dataloader_test, config).reshape(-1,))
+        with logger.timer('Predict test data'):
+            test_preds += sp.special.expit(predict(model, dataloader_test, config).reshape(-1,))
+
+        return test_preds
+
+    with Pool(processes=max_workers) as p, logger.timer('Seed averaging'):
+        results = p.map(train, [SEED * i for i in range(6)])
+
+    test_preds = np.array(results).mean(0)
 
     message = f'Training and prediction has been done.'
     logger.post(message)
