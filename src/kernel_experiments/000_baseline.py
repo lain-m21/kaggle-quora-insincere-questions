@@ -37,21 +37,6 @@ EPOCHS = 8
 THRESHOLD = 0.35
 
 
-class SimpleLogger:
-    def info(self, msg):
-        print(msg)
-
-    def post(self, msg):
-        self.info(msg)
-
-    @contextmanager
-    def timer(self, process_name: str):
-        since = time.time()
-        yield
-        message = f'Process [{process_name}] finished in {time.time() - since:.2f} sec'
-        self.info(message)
-
-
 # ======== Data Preparation ======== #
 
 def load_data(input_dir, logger):
