@@ -8,7 +8,6 @@ import argparse
 import itertools
 from contextlib import contextmanager
 import multiprocessing
-from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from functools import partial
 import numpy as np
@@ -25,8 +24,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import dataset, DataLoader
 
 from utils.logger import Logger
-
-os.environ['OMP_NUM_THREADS'] = '1'
 
 INPUT_DIR = Path.cwd().joinpath('../../input')
 DATA_DIR = Path.cwd().joinpath('../../data')
@@ -494,7 +491,6 @@ class StackedRNNFM(nn.Module):
 def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_device, batch_size, logger):
 
     test_preds = np.zeros(seq_test.shape[0])
-    torch.set_num_threads(1)
 
     with logger.timer('Dataloader preparation'):
         x_train, x_test = seq_train.astype(int), seq_test.astype(int)
@@ -565,10 +561,7 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     with logger.timer('Load embeddings'):
-        if args['debug']:
-            embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300)
-        else:
-            embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
+        embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
 
     # ===== training and evaluation loop ===== #
 
@@ -577,23 +570,57 @@ def main(logger, args):
         output_device = device_ids[0]
         torch.cuda.set_device(device_ids[0])
 
+        set_seed(SEED)
+
         batch_size = args['batch_size'] * len(device_ids)
         max_workers = args['max_workers']
+        test_preds = np.zeros(seq_test.shape[0])
 
-    _logger = SimpleLogger()
+    with logger.timer('Dataloader preparation'):
+        x_train, x_test = seq_train.astype(int), seq_test.astype(int)
+        y_train = label_train.astype(np.float32)
 
-    with ThreadPool(processes=max_workers) as p, logger.timer('Seed averaging'):
-        results = p.map(partial(train,
-                                seq_train=seq_train,
-                                seq_test=seq_test,
-                                label_train=label_train,
-                                embedding_matrix=embedding_matrix,
-                                output_device=output_device,
-                                batch_size=batch_size,
-                                logger=_logger),
-                        [SEED * i for i in range(6)])
+        dataset_train = SimpleDataset(x_train, y_train)
+        dataset_test = SimpleDataset(x_test)
 
-    test_preds = np.array(results).mean(0)
+        dataloader_train = DataLoader(
+            dataset=dataset_train,
+            batch_size=batch_size,
+            shuffle=True,
+            pin_memory=True
+        )
+        dataloader_test = DataLoader(
+            dataset=dataset_test,
+            batch_size=batch_size,
+            shuffle=False,
+            pin_memory=True
+        )
+
+    with logger.timer('Build NN model'):
+        model = StackedRNNFM(embedding_matrix, PADDING_LENGTH, hidden_size=64)
+        model.to(output_device)
+
+    with logger.timer('Model training preparation - loss and optimizer'):
+        criteria = [
+            [nn.BCEWithLogitsLoss(reduction='mean')], [1.0]
+        ]
+        metric = f1_from_logits
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        scheduler = None
+
+        config = {
+            'epochs': EPOCHS,
+            'loss_names': ['BCE Loss'],
+            'metric_type': 'batch',
+            'output_device': output_device,
+            'reg_lambda': None,
+        }
+
+    with logger.timer('Train model'):
+        model = train_model(model, criteria, metric, optimizer, scheduler, dataloader_train, logger, config)
+
+    with logger.timer('Predict test data'):
+        test_preds += sp.special.expit(predict(model, dataloader_test, config).reshape(-1,))
 
     message = f'Training and prediction has been done.'
     logger.post(message)
@@ -605,8 +632,6 @@ def main(logger, args):
 
 
 if __name__ == '__main__':
-    # multiprocessing.set_start_method('spawn', force=True)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', default=512, type=int)
     parser.add_argument('--device-ids', metavar='N', type=int, nargs='+', default=[0])
