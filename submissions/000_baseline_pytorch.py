@@ -5,6 +5,7 @@ import time
 import random
 import itertools
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -36,7 +37,7 @@ args = {
 }
 
 
-class Logger:
+class SimpleLogger:
     def info(self, msg):
         print(msg)
 
@@ -219,6 +220,10 @@ def collate_dict(inputs, index):
         return dict([(key, collate_dict(item, index)) for key, item in inputs.items()])
     else:
         return inputs[index]
+
+
+def worker_init_fn(worker_id):
+    np.random.seed(np.random.get_state()[1][0] + worker_id)
 
 
 class SimpleDataset(dataset.Dataset):
@@ -482,35 +487,9 @@ class StackedRNNFM(nn.Module):
 # ================================== #
 
 
-def main(logger, args):
-    with logger.timer('Data loading'):
-        df_train, df_test = load_data(INPUT_DIR, logger)
-    with logger.timer('Tokenize train data'):
-        seq_train, tokenizer = tokenize_text(df_train, logger)
-    with logger.timer('Tokenize test data'):
-        seq_test, _ = tokenize_text(df_test, logger, tokenizer=tokenizer)
-    with logger.timer('Pad train text data'):
-        seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
-    with logger.timer('Pad test text data'):
-        seq_test = pad_sequences(seq_test, maxlen=PADDING_LENGTH)
+def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_device, batch_size, logger):
 
-    label_train = df_train['target'].values.reshape(-1, 1)
-
-    with logger.timer('Load embeddings'):
-        embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
-
-    # ===== training and evaluation loop ===== #
-
-    with logger.timer('Training pre-settings'):
-        device_ids = args['device_ids']
-        output_device = device_ids[0]
-        torch.cuda.set_device(device_ids[0])
-
-        set_seed(SEED)
-
-        batch_size = args['batch_size'] * len(device_ids)
-        max_workers = args['max_workers']
-        test_preds = np.zeros(seq_test.shape[0])
+    test_preds = np.zeros(seq_test.shape[0])
 
     with logger.timer('Dataloader preparation'):
         x_train, x_test = seq_train.astype(int), seq_test.astype(int)
@@ -523,7 +502,8 @@ def main(logger, args):
             dataset=dataset_train,
             batch_size=batch_size,
             shuffle=True,
-            pin_memory=True
+            pin_memory=True,
+            worker_init_fn=worker_init_fn
         )
         dataloader_test = DataLoader(
             dataset=dataset_test,
@@ -552,11 +532,60 @@ def main(logger, args):
             'reg_lambda': None,
         }
 
+    set_seed(seed)
+
     with logger.timer('Train model'):
         model = train_model(model, criteria, metric, optimizer, scheduler, dataloader_train, logger, config)
 
     with logger.timer('Predict test data'):
         test_preds += sp.special.expit(predict(model, dataloader_test, config).reshape(-1,))
+
+    return test_preds
+
+# ================================== #
+
+
+def main(logger, args):
+    with logger.timer('Data loading'):
+        df_train, df_test = load_data(INPUT_DIR, logger)
+    with logger.timer('Tokenize train data'):
+        seq_train, tokenizer = tokenize_text(df_train, logger)
+    with logger.timer('Tokenize test data'):
+        seq_test, _ = tokenize_text(df_test, logger, tokenizer=tokenizer)
+    with logger.timer('Pad train text data'):
+        seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
+    with logger.timer('Pad test text data'):
+        seq_test = pad_sequences(seq_test, maxlen=PADDING_LENGTH)
+
+    label_train = df_train['target'].values.reshape(-1, 1)
+
+    with logger.timer('Load embeddings'):
+        embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
+
+    # ===== training and evaluation loop ===== #
+
+    with logger.timer('Training pre-settings'):
+        device_ids = args['device_ids']
+        output_device = device_ids[0]
+        torch.cuda.set_device(device_ids[0])
+
+        batch_size = args['batch_size'] * len(device_ids)
+        max_workers = args['max_workers']
+
+    _logger = SimpleLogger()
+
+    with torch.multiprocessing.Pool(processes=max_workers) as p, logger.timer('Seed averaging'):
+        results = p.map(partial(train,
+                                seq_train=seq_train,
+                                seq_test=seq_test,
+                                label_train=label_train,
+                                embedding_matrix=embedding_matrix,
+                                output_device=output_device,
+                                batch_size=batch_size,
+                                logger=_logger),
+                        [SEED * i for i in range(6)])
+
+    test_preds = np.array(results).mean(0)
 
     message = f'Training and prediction has been done.'
     logger.post(message)
@@ -568,5 +597,5 @@ def main(logger, args):
 
 
 if __name__ == '__main__':
-    logger = Logger()
+    logger = SimpleLogger()
     main(logger, args)
