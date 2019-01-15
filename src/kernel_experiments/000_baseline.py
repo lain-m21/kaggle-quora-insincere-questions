@@ -8,7 +8,6 @@ import argparse
 import itertools
 from contextlib import contextmanager
 from pathlib import Path
-from logging import getLogger, StreamHandler, Formatter
 from functools import partial
 import numpy as np
 import pandas as pd
@@ -488,9 +487,8 @@ class StackedRNNFM(nn.Module):
 
 
 def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_device, batch_size, logger):
-    test_preds = np.zeros(seq_test.shape[0])
 
-    np.random.seed(seed)
+    test_preds = np.zeros(seq_test.shape[0])
 
     with logger.timer('Dataloader preparation'):
         x_train, x_test = seq_train.astype(int), seq_test.astype(int)
@@ -533,6 +531,8 @@ def train(seed, seq_train, seq_test, label_train, embedding_matrix, output_devic
             'reg_lambda': None,
         }
 
+    set_seed(seed)
+
     with logger.timer('Train model'):
         model = train_model(model, criteria, metric, optimizer, scheduler, dataloader_train, logger, config)
 
@@ -559,7 +559,10 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     with logger.timer('Load embeddings'):
-        embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
+        if args['debug']:
+            embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300)
+        else:
+            embedding_matrix = load_embeddings(embed_type=0, word_index=tokenizer.word_index)
 
     # ===== training and evaluation loop ===== #
 
@@ -570,7 +573,6 @@ def main(logger, args):
 
         batch_size = args['batch_size'] * len(device_ids)
         max_workers = args['max_workers']
-        set_seed(SEED)
 
     _logger = SimpleLogger()
 
@@ -597,6 +599,8 @@ def main(logger, args):
 
 
 if __name__ == '__main__':
+    torch.multiprocessing.set_start_method('spawn', force=True)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', default=512, type=int)
     parser.add_argument('--device-ids', metavar='N', type=int, nargs='+', default=[0])
