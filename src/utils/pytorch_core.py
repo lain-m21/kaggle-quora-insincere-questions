@@ -46,7 +46,7 @@ def to_cpu(data):
 
 def train_model(model: nn.Module, criteria: List[List], metric: Callable, optimizer: Optimizer,
                 scheduler: Union[None, _LRScheduler, ReduceLROnPlateau], dataloaders: Dict[str, DataLoader],
-                logger: Logger, config: dict) -> Tuple[nn.Module, float]:
+                logger: Logger, config: dict) -> Tuple[nn.Module, float, int]:
     epochs = config['epochs']
     loss_names = config['loss_names']
     metric_type = config['metric_type']
@@ -127,7 +127,7 @@ def train_model(model: nn.Module, criteria: List[List], metric: Callable, optimi
     message += f'Best Validation Metric: {metric_best:.5f} at Epoch {epoch_best:d}.'
     logger.post(message)
 
-    return model, metric_best
+    return model, metric_best, epoch_best
 
 
 def train_on_epoch(model: nn.Module, criteria: List[List], metric: Callable, metric_type: str,

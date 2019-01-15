@@ -65,6 +65,7 @@ def main(logger, args):
 
     skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
     oof_preds = np.zeros(seq_train.shape[0])
+    results = []
     for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
         logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
         x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
@@ -112,7 +113,10 @@ def main(logger, args):
             'fold': fold
         }
 
-        model, valid_score = train_model(model, criteria, metric, optimizer, scheduler, dataloaders, logger, config)
+        model, valid_score, best_epoch = train_model(model, criteria, metric, optimizer,
+                                                     scheduler, dataloaders, logger, config)
+
+        results.append({'fold': fold, 'best_score': valid_score, 'best_epoch': best_epoch})
 
         message = f'Training and evaluation for the fold {fold + 1} / {KFOLD} has been done.\n'
         message += f'Validation F1 score: {valid_score}\n'
@@ -126,6 +130,7 @@ def main(logger, args):
         )
         oof_preds[index_valid] = sp.special.expit(predict(model, dataloader_valid, config).reshape(-1,))
 
+    logger.post(f'K-Fold train and evaluation results: {results}')
     logger.info('Training and evaluation loop has been done. Start f1 threshold search.')
     search_result = threshold_search(label_train.reshape(-1,), oof_preds)
     logger.post(f'Threshold search result - f1: {search_result["f1"]}, threshold: {search_result["threshold"]}')
