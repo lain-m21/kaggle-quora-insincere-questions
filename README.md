@@ -2,7 +2,7 @@
 Kaggle Quora Insincere Questions Classification
 
 ## Ideas
-- [ ] Train on the entire train set
+- [x] Train on the entire train set
 
 To do ensemble of multiple different models, waiting for k-fold training is not reasonable.
 
@@ -32,7 +32,7 @@ Of course, do it. Refer to - https://qiita.com/halhorn/items/c91497522be27bde17c
 
 Might be effective.
 
-- [ ] Pre-processing of text
+- [x] Pre-processing of text
 
 Try this kernel - https://www.kaggle.com/theoviel/improve-your-score-with-some-text-preprocessing
 
