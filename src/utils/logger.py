@@ -19,7 +19,11 @@ from tensorboardX import SummaryWriter
 
 
 class Logger:
-    def __init__(self, logger_name: str, log_dir: Union[Path, PosixPath, str], webhook_url: str, overwrite: bool=True):
+    def __init__(self, logger_name: str,
+                 log_dir: Union[Path, PosixPath, str],
+                 webhook_url: str,
+                 overwrite: bool=True,
+                 tensorboard: bool=True):
         self._logger = getLogger(logger_name)
         if log_dir.exists():
             if overwrite:
@@ -41,19 +45,24 @@ class Logger:
         self._logger.setLevel(DEBUG)
         self._logger.addHandler(filehandler)
 
-        self._writer = SummaryWriter(str(log_dir))
+        if tensorboard:
+            self._writer = SummaryWriter(str(log_dir))
+        else:
+            self._writer = None
         self._log_step = 0
         self._url = webhook_url
 
     def info(self, message: str):
         self._logger.info(message)
-        self._writer.add_text('INFO', message, self._log_step)
-        self._log_step += 1
+        if self._writer:
+            self._writer.add_text('INFO', message, self._log_step)
+            self._log_step += 1
 
     def debug(self, message: str):
         self._logger.debug(message)
-        self._writer.add_text('DEBUG', message, self._log_step)
-        self._log_step += 1
+        if self._writer:
+            self._writer.add_text('DEBUG', message, self._log_step)
+            self._log_step += 1
 
     def post(self, message: str):
         self.info(message)
@@ -77,12 +86,15 @@ class Logger:
         raise e
 
     def add_scalar(self, tag: str, value: dict, step: int):
+        assert self._writer is not None, 'Tensorboard SummaryWriter not set!'
         self._writer.add_scalar(tag, value, step)
 
     def add_scalars(self, tag: str, value_dict: dict, step: int):
+        assert self._writer is not None, 'Tensorboard SummaryWriter not set!'
         self._writer.add_scalars(tag, value_dict, step)
 
     def add_histogram(self, tag: str, values: np.ndarray, step: int):
+        assert self._writer is not None, 'Tensorboard SummaryWriter not set!'
         self._writer.add_histogram(tag, values, step)
 
     def add_weight_histogram(self, model: nn.Module, step: int, model_name: Union[None, str]=None):
@@ -90,6 +102,7 @@ class Logger:
         Track records of model weights histograms. You can only use this method with a PyTorch model.
         """
         assert isinstance(model, nn.Module), 'model should be PyTorch nn.Module!'
+        assert self._writer is not None, 'Tensorboard SummaryWriter not set!'
         if model_name is not None:
             prefix = model_name + '_'
         else:
