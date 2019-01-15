@@ -40,22 +40,11 @@ THRESHOLD = 0.35
 
 
 class SimpleLogger:
-    def __init__(self, logger_name):
+    def info(self, msg):
+        print(msg)
 
-        self._logger = getLogger(logger_name)
-
-        log_fmt = Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        streamhandler = StreamHandler()
-        streamhandler.setLevel('INFO')
-        streamhandler.setFormatter(log_fmt)
-        self._logger.setLevel('INFO')
-        self._logger.addHandler(streamhandler)
-
-    def info(self, message: str):
-        self._logger.info(message)
-
-    def debug(self, message: str):
-        self._logger.debug(message)
+    def post(self, msg):
+        self.info(msg)
 
     @contextmanager
     def timer(self, process_name: str):
@@ -63,37 +52,6 @@ class SimpleLogger:
         yield
         message = f'Process [{process_name}] finished in {time.time() - since:.2f} sec'
         self.info(message)
-
-
-def info(self, message: str):
-    self._logger.info(message)
-    if self._writer:
-        self._writer.add_text('INFO', message, self._log_step)
-        self._log_step += 1
-
-
-def debug(self, message: str):
-    self._logger.debug(message)
-    if self._writer:
-        self._writer.add_text('DEBUG', message, self._log_step)
-        self._log_step += 1
-
-
-def post(self, message: str):
-    self.info(message)
-    if self._url:
-        content = self._logger.name + ' - ' + message
-        requests.post(self._url, json.dumps({'text': content}))
-    else:
-        raise ValueError('Slack URL not set!')
-
-
-@contextmanager
-def timer(self, process_name: str):
-    since = time.time()
-    yield
-    message = f'Process [{process_name}] finished in {time.time() - since:.2f} sec'
-    self.info(message)
 
 
 # ======== Data Preparation ======== #
@@ -610,7 +568,7 @@ def main(logger, args):
         batch_size = args['batch_size'] * len(device_ids)
         max_workers = args['max_workers']
 
-    _logger = SimpleLogger(__name__)
+    _logger = SimpleLogger()
 
     with Pool(processes=max_workers) as p, logger.timer('Seed averaging'):
         results = p.map(partial(train,
