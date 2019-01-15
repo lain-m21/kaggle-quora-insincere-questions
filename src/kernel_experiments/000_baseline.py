@@ -7,6 +7,8 @@ import random
 import argparse
 import itertools
 from contextlib import contextmanager
+import multiprocessing
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from functools import partial
 import numpy as np
@@ -579,7 +581,7 @@ def main(logger, args):
 
     _logger = SimpleLogger()
 
-    with torch.multiprocessing.Pool(processes=max_workers) as p, logger.timer('Seed averaging'):
+    with ThreadPool(processes=max_workers) as p, logger.timer('Seed averaging'):
         results = p.map(partial(train,
                                 seq_train=seq_train,
                                 seq_test=seq_test,
@@ -602,7 +604,7 @@ def main(logger, args):
 
 
 if __name__ == '__main__':
-    torch.multiprocessing.set_start_method('spawn', force=True)
+    # multiprocessing.set_start_method('spawn', force=True)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', default=512, type=int)
