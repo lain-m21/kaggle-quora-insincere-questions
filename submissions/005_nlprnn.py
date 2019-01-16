@@ -532,11 +532,11 @@ class NLPFeaturesRNNFM(nn.Module):
 # ================================== #
 
 
-def train_and_predict(seed, x_train, x_test, label_train, batch_size, embedding_matrix, output_device):
+def train_and_predict(seed, x_train, x_test, y_train, batch_size, embedding_matrix, output_device):
     set_seed(seed)
 
     with logger.timer('Dataloader preparation'):
-        dataset_train = DictDataset(x_train, label_train)
+        dataset_train = DictDataset(x_train, y_train)
         dataset_test = DictDataset(x_test)
 
         dataloader_train = DataLoader(
@@ -625,6 +625,7 @@ def main(logger, args):
         'text': seq_test.astype(int),
         'continuous': x_continuous_test
     }
+    y_train = label_train.astype(np.float32)
 
     with logger.timer('Load embeddings'):
         embedding_matrix = load_multiple_embeddings(tokenizer.word_index, embed_types=(0, 2), max_workers=2)
@@ -645,7 +646,7 @@ def main(logger, args):
             seed=SEED * i,
             x_train=x_train,
             x_test=x_test,
-            label_train=label_train,
+            y_train=y_train,
             batch_size=batch_size,
             embedding_matrix=embedding_matrix,
             output_device=output_device
