@@ -38,7 +38,6 @@ if __name__ == '__main__':
     script_name = Path(__file__).stem
     log_dir = LOG_DIR.joinpath(f'{script_name}')
     logger = Logger(script_name, log_dir=log_dir, webhook_url=SLACK_URL, overwrite=True)
-    logger.info(f'Script starts with command line arguments: {args}')
     try:
         main(logger)
         logger.post('===== Script completed successfully! =====')
