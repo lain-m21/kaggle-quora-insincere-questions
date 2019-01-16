@@ -48,6 +48,14 @@ def get_seq_length(sequence):
     return np.array([len(x) for x in sequence])
 
 
+def extract_nlp_features(df):
+    df['total_length'] = df['question_text'].apply(len)
+    df['n_capitals'] = df['question_text'].apply(lambda x: sum(1 for c in x if c.isupper()))
+    df['n_words'] = df['question_text'].str.count('\S+')
+    df['n_unique_words'] = df['question_text'].apply(lambda x: len(set(w for w in x.split())))
+    return df
+
+
 def load_embeddings(embed_type, word_index):
     if embed_type == 0:
         embedding_file = '../../input/embeddings/glove.840B.300d/glove.840B.300d.txt'
