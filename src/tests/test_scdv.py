@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 
 from model.scdv import SCDV
-from utils.prepare_data import load_data, preprocess_text, tokenize_text, load_embeddings
+from utils.prepare_data import load_data, preprocess_text, tokenize_text
 from utils.logger import Logger
 
 INPUT_DIR = Path.cwd().joinpath('../../input')
@@ -16,14 +16,14 @@ SLACK_URL = json.load(Path.cwd().joinpath('../config.json').open('r'))['slack']
 def main(logger):
     df_train, df_test = load_data(INPUT_DIR, logger)
     logger.info('Preprocess text')
-    df_train = preprocess_text(df_train)
+    df_train = preprocess_text(df_train.iloc[:200000])
     df_test = preprocess_text(df_test)
     seq_train, tokenizer = tokenize_text(df_train, logger)
     seq_test, _ = tokenize_text(df_test, logger, tokenizer=tokenizer)
     text_train = df_train['question_text'].values.tolist()
     embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300)
 
-    scdv = SCDV(embedding_matrix, tokenizer, logger, num_clusters=50)
+    scdv = SCDV(embedding_matrix, tokenizer, logger, num_clusters=50, gmm_path=DATA_DIR.joinpath('gmm_tmp.pkl'))
     with logger.timer('SCDV computation on train data'):
         scdv_train = scdv.fit_transform(text_train, seq_train)
 

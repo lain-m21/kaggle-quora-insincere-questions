@@ -1,30 +1,32 @@
 import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.externals import joblib
 from keras.preprocessing.text import text_to_word_sequence
 
 
 class SCDV:
-    def __init__(self, embedding_matrix: np.ndarray, tokenizer, logger, num_clusters=50):
+    def __init__(self, embedding_matrix: np.ndarray, tokenizer, logger, num_clusters=50, gmm_path=None):
         self.embedding_matrix = embedding_matrix
         self.tokenizer = tokenizer
         self.num_clusters = num_clusters
         self.logger = logger
-        self.min_no = 0
-        self.max_no = 0
+        self.gmm_path = gmm_path
 
         self.word_centroid_map = None
         self.word_centroid_prob_map = None
         self.word_idf_dict = None
         self.prob_wordvecs = None
+        self.min_no = 0
+        self.max_no = 0
         self.threshold = 0
 
     def fit_transform(self, texts, sequences):
         idx, idx_proba = self._cluster_gmm()
 
         self.logger.info('Form word centroid maps')
-        self.word_centroid_map = dict(zip(list(range(self.embedding_matrix.shape[1])), idx))
-        self.word_centroid_prob_map = dict(zip(list(range(self.embedding_matrix.shape[1])), idx_proba))
+        self.word_centroid_map = dict(zip(list(range(self.embedding_matrix.shape[0])), idx))
+        self.word_centroid_prob_map = dict(zip(list(range(self.embedding_matrix.shape[0])), idx_proba))
 
         self.logger.info('Fit TfidfVectorizer on train text data')
         vectorizer = TfidfVectorizer(dtype=np.float32, tokenizer=text_to_word_sequence)
@@ -34,6 +36,7 @@ class SCDV:
 
         self.logger.info('Form word idf dictionary')
         self.word_idf_dict = dict(zip([self.tokenizer.word_index[w] for w in feature_names], idf_list))
+        self.word_idf_dict[0] = 0
 
         self.logger.info('Compute probability word vectors')
         self.prob_wordvecs = self._get_probability_word_vectors(self.word_centroid_map,
@@ -63,12 +66,25 @@ class SCDV:
         return scdv_vectors
 
     def _cluster_gmm(self):
-        mixture_model = GaussianMixture(n_components=self.num_clusters,
-                                        covariance_type='tied',
-                                        init_params='kmeans',
-                                        max_iter=50)
-        self.logger.info('Fit Gaussian Mixture model...')
-        mixture_model.fit(self.embedding_matrix)
+        if self.gmm_path is not None:
+            if self.gmm_path.exists():
+                mixture_model = joblib.load(self.gmm_path, str(self.gmm_path))
+            else:
+                mixture_model = GaussianMixture(n_components=self.num_clusters,
+                                                covariance_type='tied',
+                                                init_params='kmeans',
+                                                max_iter=50)
+                self.logger.info('Fit Gaussian Mixture model...')
+                mixture_model.fit(self.embedding_matrix)
+                joblib.dump(mixture_model, str(self.gmm_path))
+        else:
+            mixture_model = GaussianMixture(n_components=self.num_clusters,
+                                            covariance_type='tied',
+                                            init_params='kmeans',
+                                            max_iter=50)
+            self.logger.info('Fit Gaussian Mixture model...')
+            mixture_model.fit(self.embedding_matrix)
+
         self.logger.info('Cluster word vectors')
         idx = mixture_model.predict(self.embedding_matrix)
         idx_proba = mixture_model.predict_proba(self.embedding_matrix)
