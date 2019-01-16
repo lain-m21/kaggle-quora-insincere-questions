@@ -73,14 +73,8 @@ class BinaryBalancedSampler(sampler.Sampler):
     def _get_samples(self):
         pos_count = int(self.pos_ratio * self.num_samples)
         neg_count = self.num_samples - pos_count
-        if self.pos_ratio < 0.5:
-            pos_replace = True
-            neg_replace = False
-        else:
-            pos_replace = False
-            neg_replace = True
-        samples_positive = np.random.choice(self.indices_positive, pos_count, replace=pos_replace)
-        samples_negative = np.random.choice(self.indices_negative, neg_count, replace=neg_replace)
+        samples_positive = np.random.choice(self.indices_positive, pos_count)
+        samples_negative = np.random.choice(self.indices_negative, neg_count)
         return np.concatenate([samples_positive, samples_negative])
 
     def _get_indices(self, samples):
