@@ -28,7 +28,7 @@ class StackedRNNFM(nn.Module):
         fm_first_size = hidden_size * 2 * 4
         fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
 
-        self.fc = nn.Linear(int(fm_first_size + fm_second_size), 32)
+        self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(out_drop)
         self.output_layer = nn.Linear(out_hidden_dim, 1)
