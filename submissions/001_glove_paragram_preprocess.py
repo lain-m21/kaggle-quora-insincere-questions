@@ -554,6 +554,10 @@ def train_and_predict(seed, seq_train, seq_test, label_train, batch_size, embedd
 def main(logger, args):
     with logger.timer('Data loading'):
         df_train, df_test = load_data(INPUT_DIR, logger)
+    with logger.timer('Preprocess train data'):
+        df_train = preprocess_text(df_train)
+    with logger.timer('Preprocess test data'):
+        df_test = preprocess_text(df_test)
     with logger.timer('Tokenize train data'):
         seq_train, tokenizer = tokenize_text(df_train, logger)
     with logger.timer('Tokenize test data'):
