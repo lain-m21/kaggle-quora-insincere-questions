@@ -1,6 +1,7 @@
 import sys; sys.path.append('..')
 import json
 from pathlib import Path
+import numpy as np
 
 from model.scdv import SCDV
 from utils.prepare_data import load_data, preprocess_text, tokenize_text, load_embeddings
@@ -20,7 +21,7 @@ def main(logger):
     seq_train, tokenizer = tokenize_text(df_train, logger)
     seq_test, _ = tokenize_text(df_test, logger, tokenizer=tokenizer)
     text_train = df_train['question_text'].values.tolist()
-    embedding_matrix = load_embeddings(0, tokenizer.word_index)
+    embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300)
 
     scdv = SCDV(embedding_matrix, tokenizer, logger, num_clusters=50)
     with logger.timer('SCDV computation on train data'):
