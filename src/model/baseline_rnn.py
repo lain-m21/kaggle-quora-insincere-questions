@@ -80,6 +80,8 @@ class StackedRNNFastFM(nn.Module):
                           bidirectional=True, batch_first=True)
 
         self.fast_attention = Attention(embedding_matrix.shape[1], seq_len)
+        self.fast_dropout = nn.Dropout(0.2)
+        self.fast_fc = nn.Linear(embedding_matrix.shape[1], hidden_size * 2)
         self.lstm_attention = Attention(hidden_size * 2, seq_len)
         self.gru_attention = Attention(hidden_size * 2, seq_len)
 
@@ -100,6 +102,7 @@ class StackedRNNFastFM(nn.Module):
         x_gru, _ = self.gru(x_lstm)
 
         x_fast_attention = self.fast_attention(x_embedding)
+        x_fast_attention = self.fast_dropout(self.fast_fc(x_fast_attention))
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.gru_attention(x_gru)
         x_avg_pool = torch.mean(x_gru, 1)
