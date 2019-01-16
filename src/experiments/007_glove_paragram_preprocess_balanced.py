@@ -81,7 +81,6 @@ def main(logger, args):
             dataset=dataset_train,
             sampler=sampler,
             batch_size=batch_size,
-            shuffle=True,
             pin_memory=True
         )
         dataloader_valid = DataLoader(
