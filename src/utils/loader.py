@@ -8,7 +8,7 @@ def collate_dict(inputs, index):
     if isinstance(inputs, dict):
         return dict([(key, collate_dict(item, index)) for key, item in inputs.items()])
     elif isinstance(inputs, list):
-        return [collate_dict(item[index], index) for item in inputs]
+        return [collate_dict(item, index) for item in inputs]
     else:
         return inputs[index]
 
