@@ -618,11 +618,11 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     x_train = {
-        'text': seq_train,
+        'text': seq_train.astype(int),
         'continuous': x_continuous_train
     }
     x_test = {
-        'text': seq_test,
+        'text': seq_test.astype(int),
         'continuous': x_continuous_test
     }
 
