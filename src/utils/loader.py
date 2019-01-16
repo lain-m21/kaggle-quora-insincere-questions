@@ -57,33 +57,39 @@ class DictDataset(dataset.Dataset):
             return self.inputs[key].shape[0]
 
 
-class BalancedSampler(sampler.Sampler):
-    def __init__(self, data_source: dataset.Dataset, indices=None, num_samples=None):
-        super(BalancedSampler, self).__init__(data_source)
-        if indices is None:
-            self.indices = list(range(len(data_source)))
-        else:
-            self.indices = indices
+class BinaryBalancedSampler(sampler.Sampler):
+    def __init__(self, labels, pos_ratio=0.5, num_samples=None, shuffle=True):
+        super(BinaryBalancedSampler, self).__init__(labels)
 
+        self.indices_positive = np.where(labels == 1)[0]
+        self.indices_negative = np.where(labels == 0)[0]
+        self.pos_ratio = pos_ratio
         if num_samples is None:
-            self.num_samples = len(self.indices)
+            self.num_samples = len(labels)
         else:
             self.num_samples = num_samples
+        self.shuffle = shuffle
 
-        label_to_count = defaultdict(lambda: 0)
-        for idx in self.indices:
-            label = self._get_label(data_source, idx)
-            label_to_count[label] += 1
+    def _get_samples(self):
+        pos_count = self.pos_ratio * self.num_samples
+        neg_count = self.num_samples - pos_count
+        if self.pos_ratio < 0.5:
+            pos_replace = True
+            neg_replace = False
+        else:
+            pos_replace = False
+            neg_replace = True
+        samples_positive = np.random.choice(self.indices_positive, pos_count, replace=pos_replace)
+        samples_negative = np.random.choice(self.indices_negative, neg_count, replace=neg_replace)
+        return np.concatenate([samples_positive, samples_negative])
 
-        weights =[1.0 / label_to_count[self._get_label(data_source, idx)] for idx in self.indices]
-        self.weights = torch.DoubleTensor(weights)
-
-    def _get_label(self, data_source: dataset.Dataset, idx: int):
-        _, label = data_source[idx]
-        return label
+    def _get_indices(self, samples):
+        if self.shuffle:
+            np.random.shuffle(samples)
+        return samples
 
     def __iter__(self):
-        return [self.indices[i] for i in torch.multinomial(self.weights, self.num_samples, replacement=True)]
+        return iter(self._get_indices(self._get_samples()))
 
     def __len__(self):
         return self.num_samples
