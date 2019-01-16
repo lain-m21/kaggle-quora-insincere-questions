@@ -41,6 +41,7 @@ def main(logger, args):
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
+    logger.info('Load multiple embeddings')
     embedding_matrix = load_multiple_embeddings(tokenizer.word_index, embed_types=[0, 2],
                                                 max_workers=args['max_workers'])
     embedding_matrix = np.array(embedding_matrix).mean(axis=0)
