@@ -85,8 +85,8 @@ class StackedRNNFastFM(nn.Module):
         self.lstm_attention = Attention(hidden_size * 2, seq_len)
         self.gru_attention = Attention(hidden_size * 2, seq_len)
 
-        fm_first_size = hidden_size * 2 * 4
-        fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
+        fm_first_size = hidden_size * 2 * 5
+        fm_second_size = hidden_size * 2 * sp.special.comb(5, 2)
 
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
