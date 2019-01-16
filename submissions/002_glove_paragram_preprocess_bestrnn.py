@@ -28,8 +28,8 @@ SUBMIT_DIR = Path.cwd()
 
 SEED = 42
 PADDING_LENGTH = 60
-EPOCHS = 8
-THRESHOLD = 0.41
+EPOCHS = 6
+THRESHOLD = 0.43
 
 args = {
     'batch_size': 512,
