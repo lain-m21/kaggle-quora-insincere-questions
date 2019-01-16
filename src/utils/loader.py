@@ -71,7 +71,7 @@ class BinaryBalancedSampler(sampler.Sampler):
         self.shuffle = shuffle
 
     def _get_samples(self):
-        pos_count = self.pos_ratio * self.num_samples
+        pos_count = int(self.pos_ratio * self.num_samples)
         neg_count = self.num_samples - pos_count
         if self.pos_ratio < 0.5:
             pos_replace = True
