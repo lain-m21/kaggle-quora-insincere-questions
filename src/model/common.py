@@ -2,6 +2,21 @@ import torch
 import torch.nn as nn
 
 
+class Dense(nn.Module):
+    def __init__(self, in_features, out_features, dropout=0.2):
+        super(Dense, self).__init__()
+
+        self.fc = nn.Linear(in_features, out_features)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, inputs):
+        x = self.fc(inputs)
+        x = self.relu(x)
+        outputs = self.dropout(x)
+        return outputs
+
+
 class Attention(nn.Module):
     def __init__(self, feature_dim, step_dim, bias=True, masking=True):
         super(Attention, self).__init__()
