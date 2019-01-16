@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 from utils.logger import Logger
 from utils.prepare_data import load_data, tokenize_text, load_multiple_embeddings, preprocess_text, extract_nlp_features
 from utils.pytorch_core import train_model, predict, set_seed
-from utils.loader import SimpleDataset
+from utils.loader import DictDataset
 
 from utils.metrics import f1_from_logits, threshold_search
 from model.nlprnn import NLPFeaturesRNNFM
@@ -88,8 +88,8 @@ def main(logger, args):
         }
         y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
-        dataset_train = SimpleDataset(x_train, y_train)
-        dataset_valid = SimpleDataset(x_valid, y_valid)
+        dataset_train = DictDataset(x_train, y_train)
+        dataset_valid = DictDataset(x_valid, y_valid)
 
         dataloader_train = DataLoader(
             dataset=dataset_train,
