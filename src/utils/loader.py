@@ -88,3 +88,31 @@ class BinaryBalancedSampler(sampler.Sampler):
     def __len__(self):
         return self.num_samples
 
+
+class BinaryOverSampler(sampler.Sampler):
+    def __init__(self, labels, over_sample_factor=2, shuffle=True):
+        super(BinaryOverSampler, self).__init__(labels)
+
+        self.indices_positive = np.where(labels == 1)[0]
+        self.indices_negative = np.where(labels == 0)[0]
+        self.over_sample_factor = over_sample_factor
+        self.shuffle = shuffle
+        self.num_samples = len(self.indices_negative) + int(len(self.indices_positive * over_sample_factor))
+
+    def _get_samples(self):
+        pos_count = int(self.over_sample_factor * len(self.indices_positive))
+        samples_positive = np.random.choice(self.indices_positive, pos_count)
+        samples_negative = self.indices_negative
+        return np.concatenate([samples_positive, samples_negative])
+
+    def _get_indices(self, samples):
+        if self.shuffle:
+            np.random.shuffle(samples)
+        return samples
+
+    def __iter__(self):
+        return iter(self._get_indices(self._get_samples()))
+
+    def __len__(self):
+        return self.num_samples
+
