@@ -7,17 +7,20 @@ from .common import Attention
 
 
 class StackedRNNFM(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, hidden_size=64):
+    def __init__(self, embedding_matrix, seq_len, hidden_size=64, out_hidden_dim=32,
+                 embed_drop=0.1, recurrent_drop=0.0, out_drop=0.2):
         super(StackedRNNFM, self).__init__()
 
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
         self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
         self.embedding.weight.requires_grad = False
 
-        self.embedding_dropout = nn.Dropout2d(0.1)
+        self.embedding_dropout = nn.Dropout2d(embed_drop)
 
-        self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
-        self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
+        self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, dropout=recurrent_drop,
+                            bidirectional=True, batch_first=True)
+        self.gru = nn.GRU(hidden_size * 2, hidden_size, dropout=recurrent_drop,
+                          bidirectional=True, batch_first=True)
 
         self.lstm_attention = Attention(hidden_size * 2, seq_len)
         self.gru_attention = Attention(hidden_size * 2, seq_len)
@@ -27,8 +30,8 @@ class StackedRNNFM(nn.Module):
 
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), 32)
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.2)
-        self.output_layer = nn.Linear(32, 1)
+        self.dropout = nn.Dropout(out_drop)
+        self.output_layer = nn.Linear(out_hidden_dim, 1)
 
     def forward(self, inputs):
         x_embedding = self.embedding(inputs)  # B x L x D
