@@ -140,9 +140,9 @@ class StackedNormalizedRNNFM(nn.Module):
 
         self.embedding_dropout = nn.Dropout2d(embed_drop)
 
-        self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size / 2, bidirectional=True, batch_first=True)
+        self.lstm = nn.LSTM(embedding_matrix.shape[1], int(hidden_size/ 2), bidirectional=True, batch_first=True)
         self.lstm_norm = nn.LayerNorm(hidden_size)
-        self.gru = nn.GRU(hidden_size, hidden_size, bidirectional=True, batch_first=True)
+        self.gru = nn.GRU(hidden_size, int(hidden_size/ 2), bidirectional=True, batch_first=True)
         self.gru_norm = nn.LayerNorm(hidden_size)
 
         self.lstm_attention = Attention(hidden_size, seq_len)
