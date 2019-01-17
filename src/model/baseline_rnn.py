@@ -145,8 +145,8 @@ class StackedNormalizedRNNFM(nn.Module):
         self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
         self.gru_norm = nn.LayerNorm(hidden_size * 2)
 
-        self.lstm_attention = Attention(hidden_size, seq_len)
-        self.gru_attention = Attention(hidden_size, seq_len)
+        self.lstm_attention = Attention(hidden_size * 2, seq_len)
+        self.gru_attention = Attention(hidden_size * 2, seq_len)
 
         fm_first_size = hidden_size * 2 * 4
         fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
