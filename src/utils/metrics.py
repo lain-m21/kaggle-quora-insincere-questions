@@ -26,7 +26,7 @@ def bce_from_logits(outputs, targets):
 def threshold_search(y_true, y_pred, search_range=(0.0, 1.0), search_num=100):
     best_threshold = 0
     best_score = 0
-    for threshold in tqdm([i * 0.01 for i in np.linspace(*search_range, search_num)]):
+    for threshold in tqdm([th for th in np.linspace(*search_range, search_num)]):
         score = f1_score(y_true, y_pred > threshold)
         if score > best_score:
             best_threshold = threshold
