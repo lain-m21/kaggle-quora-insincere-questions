@@ -14,7 +14,7 @@ def f1_from_logits(outputs: np.ndarray, targets: np.ndarray, threshold: float=0.
 def f1_from_logits_optimized(outputs: np.ndarray, targets: np.ndarray, search_range=(0.3, 0.6), search_num=31):
     outputs = outputs.reshape(-1, )
     targets = targets.reshape(-1, ).astype(int)
-    search_result = threshold_search(targets, outputs, search_range, search_num)
+    search_result = threshold_search(targets, sp.special.expit(outputs), search_range, search_num)
     return search_result['f1']
 
 
