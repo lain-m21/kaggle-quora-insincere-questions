@@ -17,7 +17,7 @@ from utils.prepare_data import load_data, tokenize_text, load_multiple_embedding
 from utils.pytorch_core import train_model, predict, set_seed
 from utils.loader import SimpleDataset, worker_init_fn
 
-from utils.metrics import f1_from_logits, threshold_search
+from utils.metrics import f1_from_logits_optimized, threshold_search
 from model.baseline_rnn import StackedRNNFM
 
 
@@ -98,7 +98,7 @@ def main(logger, args):
         criteria = [
             [nn.BCEWithLogitsLoss(reduction='mean')], [1.0]
         ]
-        metric = f1_from_logits
+        metric = f1_from_logits_optimized
         optimizer = optim.Adam(model.parameters(), lr=0.001)
         scheduler = None
 
