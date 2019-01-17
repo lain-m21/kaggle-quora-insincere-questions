@@ -140,16 +140,16 @@ class StackedNormalizedRNNFM(nn.Module):
 
         self.embedding_dropout = nn.Dropout2d(embed_drop)
 
-        self.lstm = nn.LSTM(embedding_matrix.shape[1], int(hidden_size/ 2), bidirectional=True, batch_first=True)
-        self.lstm_norm = nn.LayerNorm(hidden_size)
-        self.gru = nn.GRU(hidden_size, int(hidden_size/ 2), bidirectional=True, batch_first=True)
-        self.gru_norm = nn.LayerNorm(hidden_size)
+        self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
+        self.lstm_norm = nn.LayerNorm(hidden_size * 2)
+        self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
+        self.gru_norm = nn.LayerNorm(hidden_size * 2)
 
         self.lstm_attention = Attention(hidden_size, seq_len)
         self.gru_attention = Attention(hidden_size, seq_len)
 
-        fm_first_size = hidden_size * 4
-        fm_second_size = hidden_size * sp.special.comb(4, 2)
+        fm_first_size = hidden_size * 2 * 4
+        fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
 
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
@@ -162,8 +162,6 @@ class StackedNormalizedRNNFM(nn.Module):
         x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
         x_lstm, _ = self.lstm(x_embedding)
-        if self.residual:
-            x_lstm += x_embedding
         x_lstm = self.lstm_norm(x_lstm)
         x_gru, _ = self.gru(x_lstm)
         if self.residual:
