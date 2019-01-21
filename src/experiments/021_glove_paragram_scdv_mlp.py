@@ -38,7 +38,7 @@ def main(logger, args):
     df_train, _ = load_data(INPUT_DIR, logger)
     logger.info('Preprocess text')
     if args['debug']:
-        df_train = df_train.iloc[:200000]
+        df_train = df_train.iloc[:50000]
     else:
         df_train = preprocess_text(df_train)
     seq_train, tokenizer = tokenize_text(df_train, logger)
