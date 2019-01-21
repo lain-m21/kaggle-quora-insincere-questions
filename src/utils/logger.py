@@ -73,6 +73,11 @@ class Logger:
         else:
             raise ValueError('Slack URL not set!')
 
+    def post_to_spreadsheet(self, data, url: str, spreadsheet_type: str='main'):
+        self.info(f'The following data will be sent to the spreadsheet {spreadsheet_type}')
+        self.info(data)
+        requests.post(url, json.dumps(data))
+
     @contextmanager
     def timer(self, process_name: str):
         since = time.time()
@@ -111,3 +116,37 @@ class Logger:
 
         for name, param in model.named_parameters():
             self.add_histogram(prefix + name, param.clone().cpu().data.numpy(), step)
+
+
+def post_to_main_spreadsheet(logger: Logger,
+                             url: str,
+                             eval_type: str,
+                             script_name: str,
+                             model_name: str,
+                             fold: int,
+                             f1_majority: float,
+                             f1_optimized: float,
+                             threshold: float):
+    if fold < 0:
+        fold = 'total'
+    else:
+        fold = f'fold_{fold}'
+    data = [eval_type, script_name, model_name, fold, f1_majority, f1_optimized, threshold]
+    logger.post_to_spreadsheet(data, url, 'main')
+
+
+def post_to_snapshot_spreadsheet(logger: Logger,
+                                 url: str,
+                                 eval_type: str,
+                                 tag: str,
+                                 script_name: str,
+                                 model_name: str,
+                                 fold: int,
+                                 snapshot_info):
+    if fold < 0:
+        fold = 'total'
+    else:
+        fold = f'fold_{fold}'
+    data = [eval_type, tag, script_name, model_name, fold]
+    data.extend(snapshot_info)
+    logger.post_to_spreadsheet(data, url, 'snapshot')
