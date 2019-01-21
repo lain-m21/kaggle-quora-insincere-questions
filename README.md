@@ -58,16 +58,16 @@ Evaluation logs are stored in Google Spread Sheets.
 
 ### Main Sheet
 
-| Date | Eval Type | Script Name | Model Name | Validation F1 Majority | Validation F1 Optimized | Threshold |
-| --- | --- | --- | --- | --- | --- | --- |
-| 20190101-00:00:00 | Snapshot | 000_baseline | StackedRNN | 0.688 | 0.689 | 0.38 |
-| 20190101-00:00:00 | Epoch | 000_baseline | StackedRNN | 0.688 | 0.689 | 0.38 |
+| Date | Eval Type | Script Name | Model Name | Fold | Validation F1 Majority | Validation F1 Optimized | Threshold |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 20190101-00:00:00 | Snapshot | 000_baseline | StackedRNN | fold_0 | 0.688 | 0.689 | 0.38 |
+| 20190101-00:00:00 | Epoch | 000_baseline | StackedRNN | fold_total | 0.688 | 0.689 | 0.38 |
 
 ### Snapshot Sheet
 
-| Date | Eval Type | Tag | Script Name | Model Name | Epoch Info | Epoch Info | ... |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 20190101-00:00:00 | Snapshot | Score | 000_baseline | StackedRNN | 0.688 | 0.689 | ... |
+| Date | Eval Type | Tag | Script Name | Model Name | Fold | Snapshot Info | Snapshot Info | ... |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20190101-00:00:00 | Snapshot | Score | 000_baseline | StackedRNN | fold_0 | 0.688 | 0.689 | ... |
 | 20190101-00:00:00 | Snapshot | Threshold | 000_baseline | StackedRNN | 0.38 | 0.39 | ... |
 | 20190101-00:00:00 | Epoch | Score | 000_baseline | StackedRNN | 0.688 | 0.689 | ... |
 | 20190101-00:00:00 | Epoch | Threshold | 000_baseline | StackedRNN | 0.38 | 0.39 | ... |
