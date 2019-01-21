@@ -2,7 +2,6 @@ import sys; sys.path.append('..')
 import os
 import re
 import time
-from tqdm import tqdm
 import itertools
 from contextlib import contextmanager
 from pathlib import Path
@@ -448,7 +447,7 @@ class Trainer:
 
         self.model.eval()
         with torch.no_grad():
-            for i, (inputs, _) in tqdm(enumerate(test_loader)):
+            for i, (inputs, _) in test_loader:
                 inputs = self._tensors_to_gpu(inputs)
                 outputs = self.model(inputs)
                 total_outputs.append(self._tensors_to_numpy(outputs))
