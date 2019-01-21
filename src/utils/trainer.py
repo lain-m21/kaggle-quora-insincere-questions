@@ -95,7 +95,7 @@ class Trainer:
         self.logger.info(f'Start training and evaluation loop')
 
         eval_results = []
-        for epoch in self.epochs:
+        for epoch in range(self.epochs):
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
@@ -161,7 +161,7 @@ class Trainer:
         step_count = 0
 
         predict_results = []
-        for epoch in self.epochs:
+        for epoch in range(self.epochs):
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
