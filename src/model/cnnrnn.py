@@ -6,6 +6,38 @@ import torch.nn as nn
 from .common import Attention
 
 
+class StackedCNNRNN(nn.Module):
+    def __init__(self, embedding_matrix, seq_len, hidden_size=32, kernel_sizes=(3, 5),
+                 out_hidden_dim=32, seq_dropout=0.2, embed_drop=0.1, out_drop=0.2):
+        super(StackedCNNRNN, self).__init__()
+
+        self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
+        self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
+        self.embedding.weight.requires_grad = False
+
+        self.embedding_dropout = nn.Dropout2d(embed_drop)
+
+        self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
+        self.lstm_norm = nn.LayerNorm(hidden_size * 2)
+
+        self.cnn_layers = nn.ModuleList([nn.ModuleList([
+            nn.Conv1d(hidden_size * 2, hidden_size, kernel_size=k, padding=k // 2),
+            nn.ReLU()
+        ]) for k in kernel_sizes])
+
+        self.lstm_attention = Attention(hidden_size * 2, seq_len)
+        self.cnn_attention = Attention(hidden_size * len(kernel_sizes), seq_len)
+
+        fm_first_size = hidden_size * 2 * (2 + len(kernel_sizes))
+        fm_second_size = hidden_size * 2 * sp.special.comb((2 + len(kernel_sizes)), 2)
+
+        self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range((2 + len(kernel_sizes)))]
+        self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(out_drop)
+        self.output_layer = nn.Linear(out_hidden_dim, 1)
+
+
 class StackedBranchedCNNRNN(nn.Module):
     def __init__(self, embedding_matrix, seq_len, hidden_size=32, out_hidden_dim=32, seq_dropout=0.2,
                  embed_drop=0.1, out_drop=0.2):
