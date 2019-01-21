@@ -77,7 +77,7 @@ def main(logger, args):
         y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
         model = StackedCNNRNN(embedding_matrix, PADDING_LENGTH, hidden_size=32, out_hidden_dim=32,
-                              kernel_sizes=(3, 5), seq_dropout=0.0, out_drop=0.2, embed_drop=0.1)
+                              kernel_sizes=(3, 5), seq_dropout=0.2, out_drop=0.2, embed_drop=0.1)
 
         config = {
             'epochs': epochs,
