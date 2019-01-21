@@ -59,14 +59,8 @@ def main(logger, args):
     logger.info('SCDV computation')
     text_train = df_train['question_text'].values.tolist()
     scdv_path = DATA_DIR.joinpath('scdv_glove_paragram_50.pkl')
-    if scdv_path.exists():
-        scdv = joblib.load(str(scdv_path))
-        scdv_train = scdv.transform(seq_train)
-    else:
-        scdv = SCDV(embedding_matrix, tokenizer, logger, num_clusters=50, gmm_path=DATA_DIR.joinpath('gmm_tmp.pkl'))
-        scdv_train = scdv.fit_transform(text_train, seq_train)
-        if not args['debug']:
-            joblib.dump(scdv, str(scdv_path))
+    scdv = SCDV(embedding_matrix, tokenizer, logger, num_clusters=50, gmm_path=scdv_path)
+    scdv_train = scdv.fit_transform(text_train, seq_train)
 
     # ===== training and evaluation loop ===== #
     device_ids = args['device_ids']
