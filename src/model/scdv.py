@@ -68,7 +68,7 @@ class SCDV:
     def _cluster_gmm(self):
         if self.gmm_path is not None:
             if self.gmm_path.exists():
-                mixture_model = joblib.load(self.gmm_path, str(self.gmm_path))
+                mixture_model = joblib.load(str(self.gmm_path))
             else:
                 mixture_model = GaussianMixture(n_components=self.num_clusters,
                                                 covariance_type='tied',
