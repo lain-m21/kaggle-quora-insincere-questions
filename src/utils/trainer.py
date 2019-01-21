@@ -300,11 +300,11 @@ class Trainer:
         torch.cuda.manual_seed(seed)
 
 
-class CyclicLRScheduler(optim.lr_scheduler._LRScheduler):
+class CyclicLRScheduler:
     def __init__(self, optimizer, base_lr=1e-5, max_lr=3e-3,
                  step_size=1200, mode='triangular', gamma=0.9,
                  last_batch_iteration=-1):
-        super(CyclicLRScheduler, self).__init__(optimizer)
+        self.optimizer = optimizer
 
         if isinstance(base_lr, list) or isinstance(base_lr, tuple):
             if len(base_lr) != len(optimizer.param_groups):
