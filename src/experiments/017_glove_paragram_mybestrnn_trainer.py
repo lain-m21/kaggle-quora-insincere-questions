@@ -89,10 +89,10 @@ def main(logger, args):
             'scheduler_type': 'cyclic',
             'base_lr': 0.00001,
             'max_lr': 0.003,
-            'step_size': 1600,
+            'step_size': 240,
             'scheduler_mode': 'triangular',
             'scheduler_gamma': 0.9,
-            'scheduler_trigger_steps': 2000,
+            'scheduler_trigger_steps': 300,
             'sampler_type': 'normal',
             'seed': SEED
         }
