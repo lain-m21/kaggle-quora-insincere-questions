@@ -411,31 +411,29 @@ class Trainer:
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
-            with tqdm(total=n_iter) as progress_bar:
-                for i, (inputs, targets) in enumerate(train_loader):
-                    inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
+            for i, (inputs, targets) in enumerate(train_loader):
+                inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
-                    outputs = self.model(inputs)
-                    loss = self.criterion(outputs, targets)
-                    loss_epoch += loss.item() / n_iter
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, targets)
+                loss_epoch += loss.item() / n_iter
 
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step(closure=None)
-                    if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
-                        checkpoint_flag = self.scheduler.batch_step()
-                        if checkpoint_flag:
-                            self.logger.info('Cyclic scheduler hit the bottom. Start prediction.')
-                            predict_results.append(self.predict(test_loader, thresholds[checkpoint_count]))
-                            checkpoint_count += 1
-                            self.logger.info('Prediction has finished.')
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step(closure=None)
+                if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
+                    checkpoint_flag = self.scheduler.batch_step()
+                    if checkpoint_flag:
+                        self.logger.info('Cyclic scheduler hit the bottom. Start prediction.')
+                        predict_results.append(self.predict(test_loader, thresholds[checkpoint_count]))
+                        checkpoint_count += 1
+                        self.logger.info('Prediction has finished.')
 
-                            if checkpoint_count >= self.num_snapshots:
-                                break
-                            self.model.train()
+                        if checkpoint_count >= self.num_snapshots:
+                            break
+                        self.model.train()
 
-                    step_count += 1
-                    progress_bar.update(1)
+                step_count += 1
 
             if self.scheduler_type == 'step':
                 self.scheduler.step()
@@ -447,16 +445,13 @@ class Trainer:
 
     def predict(self, test_loader, threshold):
         total_outputs = []
-        n_iter = len(test_loader)
 
         self.model.eval()
-        with torch.no_grad(), tqdm(total=n_iter) as progress_bar:
+        with torch.no_grad():
             for i, (inputs, _) in tqdm(enumerate(test_loader)):
                 inputs = self._tensors_to_gpu(inputs)
                 outputs = self.model(inputs)
                 total_outputs.append(self._tensors_to_numpy(outputs))
-
-                progress_bar.update(1)
 
         total_outputs = np.concatenate(total_outputs, axis=0)
         preds = sp.special.expit(total_outputs)
