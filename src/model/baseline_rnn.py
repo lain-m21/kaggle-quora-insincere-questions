@@ -125,9 +125,9 @@ class StackedDeepRNN(nn.Module):
         x = None
         for i, (rnn_layer, norm_layer) in enumerate(zip(self.rnn_layers, self.rnn_norm_layers)):
             if i == 0:
-                x = rnn_layer(x_embedding)
+                x, _ = rnn_layer(x_embedding)
             else:
-                x = rnn_layer(x)
+                x, _ = rnn_layer(x)
             if self.layer_norm:
                 x = norm_layer(x)
             x_rnn.append(x)
