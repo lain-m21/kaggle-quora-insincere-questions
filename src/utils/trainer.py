@@ -123,7 +123,7 @@ class Trainer:
                         message = f'Fold: {fold_idx}, Epoch: {epoch} / {self.epochs}, Steps: {step_count} / {n_iter}, '
                         message += f'Checkpoint: {checkpoint_count}, Train Loss: {loss_epoch}, '
                         message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
-                        message += f'Best threshold: {eval_result["threshold"]}, Elapsed: {elapsed} sec'
+                        message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
                         self.logger.info(message)
 
                         # TODO: tensorboard
@@ -145,7 +145,7 @@ class Trainer:
                 elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
                 message = f'Fold: {fold_idx}, Epoch: {epoch} / {self.epochs}, Train Loss: {loss_epoch}, '
                 message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
-                message += f'Best threshold: {eval_result["threshold"]}, Elapsed: {elapsed} sec'
+                message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
                 self.logger.info(message)
 
                 # TODO: tensorboard
