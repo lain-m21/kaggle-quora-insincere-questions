@@ -410,7 +410,7 @@ class Trainer:
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
-            for i, (inputs, targets) in enumerate(train_loader):
+            for inputs, targets in train_loader:
                 inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                 outputs = self.model(inputs)
@@ -447,7 +447,7 @@ class Trainer:
 
         self.model.eval()
         with torch.no_grad():
-            for i, (inputs, _) in test_loader:
+            for inputs, _ in test_loader:
                 inputs = self._tensors_to_gpu(inputs)
                 outputs = self.model(inputs)
                 total_outputs.append(self._tensors_to_numpy(outputs))
