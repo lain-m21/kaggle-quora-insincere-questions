@@ -10,7 +10,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from .loaders import SimpleDataset, DictDataset, BinaryOverSampler, BinaryBalancedSampler, worker_init_fn
-from .metrics import f1_from_logits, f1_from_logits_optimized, f1_from_logits_with_threshold
+from .metrics import f1_from_logits_with_threshold
 
 
 def set_torch_environment(num_threads=2):
@@ -165,26 +165,28 @@ class Trainer:
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
-            for i, (inputs, targets) in tqdm(enumerate(train_loader)):
-                inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
+            with tqdm(total=n_iter) as progress_bar:
+                for i, (inputs, targets) in enumerate(train_loader):
+                    inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, targets)
-                loss_epoch += loss.item() / n_iter
+                    outputs = self.model(inputs)
+                    loss = self.criterion(outputs, targets)
+                    loss_epoch += loss.item() / n_iter
 
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step(closure=None)
-                if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
-                    checkpoint_flag = self.scheduler.batch_step()
-                    if checkpoint_flag:
-                        predict_results.append(self.predict(test_loader, thresholds[checkpoint_count]))
-                        checkpoint_count += 1
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step(closure=None)
+                    if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
+                        checkpoint_flag = self.scheduler.batch_step()
+                        if checkpoint_flag:
+                            predict_results.append(self.predict(test_loader, thresholds[checkpoint_count]))
+                            checkpoint_count += 1
 
-                        if checkpoint_count >= self.num_snapshots:
-                            break
+                            if checkpoint_count >= self.num_snapshots:
+                                break
 
-                step_count += 1
+                    step_count += 1
+                    progress_bar.update(1)
 
             if self.scheduler_type == 'step':
                 self.scheduler.step()
@@ -201,7 +203,7 @@ class Trainer:
         n_iter = len(valid_loader)
 
         self.model.eval()
-        with torch.no_grad():
+        with torch.no_grad(), tqdm(total=n_iter) as progress_bar:
             for i, (inputs, targets) in tqdm(enumerate(valid_loader)):
                 inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
@@ -212,13 +214,15 @@ class Trainer:
                 total_outputs.append(self._tensors_to_numpy(outputs))
                 total_targets.append(self._tensors_to_numpy(targets))
 
+                progress_bar.update(1)
+
         total_outputs = np.concatenate(total_outputs, axis=0)
         total_targets = np.concatenate(total_targets, axis=0)
         threshold_search_result = f1_from_logits_with_threshold(total_outputs, total_targets)
         preds = sp.special.expit(total_outputs)
         eval_result = {
-            'preds_proba': preds,
-            'preds_binary': np.array(preds > threshold_search_result['threshold'], dtype=int),
+            'preds_proba': preds.reshape(-1,),
+            'preds_binary': np.array(preds > threshold_search_result['threshold'], dtype=int).reshape(-1,),
             'best_threshold': threshold_search_result['threshold'],
             'f1': threshold_search_result['f1'],
             'loss': loss_eval
@@ -227,19 +231,22 @@ class Trainer:
 
     def predict(self, test_loader, threshold):
         total_outputs = []
+        n_iter = len(test_loader)
 
         self.model.eval()
-        with torch.no_grad():
+        with torch.no_grad(), tqdm(total=n_iter) as progress_bar:
             for i, (inputs, _) in tqdm(enumerate(test_loader)):
                 inputs = self._tensors_to_gpu(inputs)
                 outputs = self.model(inputs)
                 total_outputs.append(self._tensors_to_numpy(outputs))
 
+                progress_bar.update(1)
+
         total_outputs = np.concatenate(total_outputs, axis=0)
         preds = sp.special.expit(total_outputs)
         predict_result = {
-            'preds_proba': preds,
-            'preds_binary': np.array(preds > threshold, dtype=int)
+            'preds_proba': preds.reshape(-1,),
+            'preds_binary': np.array(preds > threshold, dtype=int).reshape(-1,)
         }
         return predict_result
 
