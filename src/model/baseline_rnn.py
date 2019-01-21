@@ -320,8 +320,8 @@ class StackedMaskRNNFM(nn.Module):
 
         x_lstm_attention = self.lstm_attention(x_lstm, inputs['mask'])
         x_gru_attention = self.gru_attention(x_gru, inputs['mask'])
-        x_avg_pool = torch.mean(x_gru * inputs['mask'].unsqueese(-1), 1)
-        x_max_pool, _ = torch.max(x_gru * inputs['mask'].unsqueese(-1), 1)
+        x_avg_pool = torch.mean(x_gru * inputs['mask'].unsqueeze(-1), 1)
+        x_max_pool, _ = torch.max(x_gru * inputs['mask'].unsqueeze(-1), 1)
 
         fm_first = [
             x_lstm_attention,
