@@ -20,16 +20,20 @@ class StackedCNNRNN(nn.Module):
         self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
         self.lstm_norm = nn.LayerNorm(hidden_size * 2)
 
+        self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
+        self.gru_norm = nn.LayerNorm(hidden_size * 2)
+
         self.cnn_layers = nn.ModuleList([nn.ModuleList([
             nn.Conv1d(hidden_size * 2, hidden_size, kernel_size=k, padding=k // 2),
             nn.ReLU()
         ]) for k in kernel_sizes])
 
         self.lstm_attention = Attention(hidden_size * 2, seq_len)
+        self.gru_attention = Attention(hidden_size * 2, seq_len)
         self.cnn_attention = Attention(hidden_size * len(kernel_sizes), seq_len)
 
-        fm_first_size = hidden_size * 2 * 4
-        fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
+        fm_first_size = hidden_size * 2 * 7
+        fm_second_size = hidden_size * 2 * sp.special.comb(7, 2)
 
         self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range((2 + len(kernel_sizes)))]
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
@@ -45,6 +49,9 @@ class StackedCNNRNN(nn.Module):
         x_lstm, _ = self.lstm(x_embedding)
         x_lstm = self.lstm_norm(x_lstm)
 
+        x_gru, _ = self.gru(x_lstm)
+        x_gru = self.gru_norm(x_gru)
+
         x_cnn = []
         for layers in self.cnn_layers:
             x = layers[0](x_lstm.transpose(1, 2))
@@ -54,15 +61,21 @@ class StackedCNNRNN(nn.Module):
         x_cnn = torch.cat(x_cnn, dim=1).transpose(1, 2)
 
         x_lstm_attention = self.lstm_attention(x_lstm)
+        x_gru_attention = self.gru_attention(x_gru)
         x_cnn_attention = self.cnn_attention(x_cnn)
-        x_avg_pool = torch.mean(x_cnn, 1)
-        x_max_pool, _ = torch.max(x_cnn, 1)
+        x_avg_pool_gru = torch.mean(x_gru, 1)
+        x_max_pool_gru, _ = torch.max(x_gru, 1)
+        x_avg_pool_cnn = torch.mean(x_cnn, 1)
+        x_max_pool_cnn, _ = torch.max(x_cnn, 1)
 
         fm_first = [
             x_lstm_attention,
+            x_gru_attention,
             x_cnn_attention,
-            x_avg_pool,
-            x_max_pool
+            x_avg_pool_gru,
+            x_max_pool_gru,
+            x_avg_pool_cnn,
+            x_max_pool_cnn
         ]
 
         fm_first = [drop(x) for x, drop in zip(fm_first, self.fm_dropout_layers)]
