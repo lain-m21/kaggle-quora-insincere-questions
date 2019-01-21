@@ -425,8 +425,10 @@ class Trainer:
                     if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
                         checkpoint_flag = self.scheduler.batch_step()
                         if checkpoint_flag:
+                            self.logger.info('Cyclic scheduler hit the bottom. Start prediction.')
                             predict_results.append(self.predict(test_loader, thresholds[checkpoint_count]))
                             checkpoint_count += 1
+                            self.logger.info('Prediction has finished.')
 
                             if checkpoint_count >= self.num_snapshots:
                                 break
