@@ -18,12 +18,11 @@ class Dense(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(self, feature_dim, step_dim, bias=True, masking=True):
+    def __init__(self, feature_dim, step_dim, bias=True):
         super(Attention, self).__init__()
 
         self.feature_dim = feature_dim
         self.step_dim = step_dim
-        self.supports_masking = masking
         self.bias = bias
 
         weight = torch.zeros(feature_dim, 1)
@@ -46,7 +45,7 @@ class Attention(nn.Module):
         a = torch.exp(eij)
 
         if mask is not None:
-            a = a * mask
+            a = a * mask.unsqeeze(-1)
 
         a = a / torch.sum(a, 1, keepdim=True) + 1e-10
 
