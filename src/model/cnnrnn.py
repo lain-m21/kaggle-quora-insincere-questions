@@ -35,7 +35,7 @@ class StackedCNNRNN(nn.Module):
         fm_first_size = hidden_size * 2 * 5
         fm_second_size = hidden_size * 2 * sp.special.comb(5, 2)
 
-        self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range(5)]
+        self.fm_dropout_layers = nn.ModuleList([nn.Dropout(seq_dropout) for _ in range(5)])
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(out_drop)
@@ -120,7 +120,7 @@ class StackedBranchedCNNRNN(nn.Module):
 
         fm_first_size = hidden_size * 2 * 8
         fm_second_size = hidden_size * 2 * sp.special.comb(8, 2)
-        self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range(8)]
+        self.fm_dropout_layers = nn.ModuleList([nn.Dropout(seq_dropout) for _ in range(8)])
 
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
