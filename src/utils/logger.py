@@ -126,12 +126,15 @@ def post_to_main_spreadsheet(logger: Logger,
                              fold: int,
                              f1_majority: float,
                              f1_optimized: float,
-                             threshold: float):
+                             threshold: float,
+                             others=None):
     if fold < 0:
         fold = 'total'
     else:
         fold = f'fold_{fold}'
     data = [eval_type, script_name, model_name, fold, f1_majority, f1_optimized, threshold]
+    if others is not None:
+        data.extend(others)
     logger.post_to_spreadsheet(data, url, 'main')
 
 
