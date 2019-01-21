@@ -73,9 +73,7 @@ class Logger:
         else:
             raise ValueError('Slack URL not set!')
 
-    def post_to_spreadsheet(self, data, url: str, spreadsheet_type: str='main'):
-        self.info(f'The following data will be sent to the spreadsheet {spreadsheet_type}')
-        self.info(data)
+    def post_to_spreadsheet(self, data, url: str):
         requests.post(url, json.dumps(data))
 
     @contextmanager
@@ -135,7 +133,7 @@ def post_to_main_spreadsheet(logger: Logger,
     data = [eval_type, script_name, model_name, fold, f1_majority, f1_optimized, threshold]
     if others is not None:
         data.extend(others)
-    logger.post_to_spreadsheet(data, url, 'main')
+    logger.post_to_spreadsheet(data, url)
 
 
 def post_to_snapshot_spreadsheet(logger: Logger,
@@ -152,4 +150,4 @@ def post_to_snapshot_spreadsheet(logger: Logger,
         fold = f'fold_{fold}'
     data = [eval_type, tag, script_name, model_name, fold]
     data.extend(snapshot_info)
-    logger.post_to_spreadsheet(data, url, 'snapshot')
+    logger.post_to_spreadsheet(data, url)
