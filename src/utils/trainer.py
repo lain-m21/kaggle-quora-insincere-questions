@@ -143,7 +143,7 @@ class Trainer:
                 eval_results.append(eval_result)
 
                 elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
-                message = f'Fold: {fold_idx}, Epoch: {epoch} / {self.epochs}, Train Loss: {loss_epoch}, '
+                message = f'Fold: {fold_idx}, Epoch: {epoch + 1} / {self.epochs}, Train Loss: {loss_epoch}, '
                 message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
                 message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
                 self.logger.info(message)
