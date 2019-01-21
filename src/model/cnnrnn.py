@@ -17,16 +17,16 @@ class StackedBranchedCNNRNN(nn.Module):
 
         self.embedding_dropout = nn.Dropout2d(embed_drop)
 
-        self.cnn_layers_odd = [[
+        self.cnn_layers_odd = nn.ModuleList([nn.ModuleList([
             nn.Conv1d(embedding_matrix.shape[1], hidden_size, kernel_size=k, padding=k//2),
             nn.BatchNorm1d(hidden_size),
             nn.ReLU()
-        ] for k in [3, 5]]
-        self.cnn_layers_even = [[
+        ]) for k in [3, 5]])
+        self.cnn_layers_even = nn.ModuleList([nn.ModuleList([
             nn.Conv1d(embedding_matrix.shape[1], hidden_size, kernel_size=k, padding=k//2-1),
             nn.BatchNorm1d(hidden_size),
             nn.ReLU()
-        ] for k in [2, 4]]
+        ]) for k in [2, 4]])
 
         self.gru_odd = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
         self.gru_even = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
