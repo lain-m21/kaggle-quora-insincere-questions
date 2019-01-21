@@ -1,9 +1,9 @@
 import os
 import time
 import datetime
+from tqdm import tqdm
 import numpy as np
 import scipy as sp
-from sklearn.externals import joblib
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -99,8 +99,7 @@ class Trainer:
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
-
-            for i, (inputs, targets) in enumerate(train_loader):
+            for i, (inputs, targets) in tqdm(enumerate(train_loader)):
                 inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                 outputs = self.model(inputs)
@@ -117,6 +116,7 @@ class Trainer:
                         eval_result = self.evaluate(valid_loader)
                         eval_result['epoch'] = epoch
                         eval_result['steps'] = step_count
+                        eval_result['fold'] = fold_idx
                         eval_results.append(eval_result)
 
                         elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
@@ -128,10 +128,6 @@ class Trainer:
 
                         # TODO: tensorboard
 
-                        save_path = self.model_save_dir.joinpath(
-                            f'fold_{fold_idx}_cycle_{checkpoint_count}_eval_result.pkl')
-                        joblib.dump(eval_result, str(save_path))
-
                         checkpoint_count += 1
                         self.model.train()
 
@@ -141,6 +137,7 @@ class Trainer:
                 self.scheduler.step()
                 eval_result = self.evaluate(valid_loader)
                 eval_result['epoch'] = epoch
+                eval_result['fold'] = fold_idx
                 eval_results.append(eval_result)
 
                 elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
@@ -149,8 +146,7 @@ class Trainer:
                 message += f'Best threshold: {eval_result["threshold"]}, Elapsed: {elapsed} sec'
                 self.logger.info(message)
 
-                save_path = self.model_save_dir.joinpath(f'fold_{fold_idx}_epoch_{epoch}_eval_result.pkl')
-                joblib.dump(eval_result, str(save_path))
+                # TODO: tensorboard
 
         return eval_results
 
@@ -166,7 +162,8 @@ class Trainer:
         for epoch in self.epochs:
             self.model.train()
             loss_epoch = 0
-            for i, (inputs, targets) in enumerate(train_loader):
+            self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
+            for i, (inputs, targets) in tqdm(enumerate(train_loader)):
                 inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                 outputs = self.model(inputs)
@@ -200,7 +197,7 @@ class Trainer:
 
         self.model.eval()
         with torch.no_grad():
-            for i, (inputs, targets) in enumerate(valid_loader):
+            for i, (inputs, targets) in tqdm(enumerate(valid_loader)):
                 inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                 outputs = self.model(inputs)
@@ -228,7 +225,7 @@ class Trainer:
 
         self.model.eval()
         with torch.no_grad():
-            for i, (inputs, _) in enumerate(test_loader):
+            for i, (inputs, _) in tqdm(enumerate(test_loader)):
                 inputs = self._tensors_to_gpu(inputs)
                 outputs = self.model(inputs)
                 total_outputs.append(self._tensors_to_numpy(outputs))
