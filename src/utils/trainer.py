@@ -24,9 +24,9 @@ class Trainer:
         self.model = model
         self.logger = logger
 
-        self.model_save_dir = config['model_save_dir']
         self.epochs = config['epochs']
         self.batch_size = config['batch_size']
+        self.num_snapshots = config['num_snapshots']
 
         # transfer model to GPU
         self.output_device = config['output_device']
@@ -129,6 +129,8 @@ class Trainer:
                         # TODO: tensorboard
 
                         checkpoint_count += 1
+                        if checkpoint_count >= self.num_snapshots:
+                            break
                         self.model.train()
 
                 step_count += 1
@@ -178,6 +180,9 @@ class Trainer:
                     if checkpoint_flag:
                         predict_results.append(self.predict(test_loader, thresholds[checkpoint_count]))
                         checkpoint_count += 1
+
+                        if checkpoint_count >= self.num_snapshots:
+                            break
 
                 step_count += 1
 
