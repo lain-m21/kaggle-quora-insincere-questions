@@ -45,7 +45,7 @@ class Attention(nn.Module):
         a = torch.exp(eij)
 
         if mask is not None:
-            a = a * mask.unsqeeze(-1)
+            a = a * mask.unsqueeze(-1)
 
         a = a / torch.sum(a, 1, keepdim=True) + 1e-10
 
