@@ -326,9 +326,9 @@ class CyclicLRScheduler:
         self.mode = mode
         self.gamma = gamma
 
+        self.restart = False
         self.batch_step(last_batch_iteration + 1)
         self.last_batch_iteration = last_batch_iteration
-        self.restart = False
 
     def batch_step(self, batch_iteration=None):
         if batch_iteration is None:
