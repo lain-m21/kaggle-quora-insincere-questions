@@ -104,7 +104,7 @@ def main(logger, args):
                 'scheduler_mode': 'triangular',
                 'scheduler_gamma': 0.9,
                 'scheduler_trigger_steps': int(spec['steps_per_epoch'] * 2),
-                'sampler_type': spec['over'],
+                'sampler_type': spec['sampler_type'],
                 'over_sample_factor': spec['over_sample_factor'],
                 'seed': SEED
             }
