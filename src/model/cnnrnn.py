@@ -32,10 +32,10 @@ class StackedCNNRNN(nn.Module):
         self.gru_attention = Attention(hidden_size * 2, seq_len)
         self.cnn_attention = Attention(hidden_size * len(kernel_sizes), seq_len)
 
-        fm_first_size = hidden_size * 2 * 7
-        fm_second_size = hidden_size * 2 * sp.special.comb(7, 2)
+        fm_first_size = hidden_size * 2 * 5
+        fm_second_size = hidden_size * 2 * sp.special.comb(5, 2)
 
-        self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range((2 + len(kernel_sizes)))]
+        self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range(5)]
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(out_drop)
@@ -54,7 +54,7 @@ class StackedCNNRNN(nn.Module):
 
         x_cnn = []
         for layers in self.cnn_layers:
-            x = layers[0](x_lstm.transpose(1, 2))
+            x = layers[0](x_gru.transpose(1, 2))
             x = layers[1](x)
             x_cnn.append(x)
 
@@ -63,19 +63,15 @@ class StackedCNNRNN(nn.Module):
         x_lstm_attention = self.lstm_attention(x_lstm)
         x_gru_attention = self.gru_attention(x_gru)
         x_cnn_attention = self.cnn_attention(x_cnn)
-        x_avg_pool_gru = torch.mean(x_gru, 1)
-        x_max_pool_gru, _ = torch.max(x_gru, 1)
-        x_avg_pool_cnn = torch.mean(x_cnn, 1)
-        x_max_pool_cnn, _ = torch.max(x_cnn, 1)
+        x_avg_pool = torch.mean(x_cnn, 1)
+        x_max_pool, _ = torch.max(x_cnn, 1)
 
         fm_first = [
             x_lstm_attention,
             x_gru_attention,
             x_cnn_attention,
-            x_avg_pool_gru,
-            x_max_pool_gru,
-            x_avg_pool_cnn,
-            x_max_pool_cnn
+            x_avg_pool,
+            x_max_pool
         ]
 
         fm_first = [drop(x) for x, drop in zip(fm_first, self.fm_dropout_layers)]
