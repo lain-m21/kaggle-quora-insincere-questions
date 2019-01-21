@@ -28,14 +28,53 @@ class StackedCNNRNN(nn.Module):
         self.lstm_attention = Attention(hidden_size * 2, seq_len)
         self.cnn_attention = Attention(hidden_size * len(kernel_sizes), seq_len)
 
-        fm_first_size = hidden_size * 2 * (2 + len(kernel_sizes))
-        fm_second_size = hidden_size * 2 * sp.special.comb((2 + len(kernel_sizes)), 2)
+        fm_first_size = hidden_size * 2 * 4
+        fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
 
         self.fm_dropout_layers = [nn.Dropout(seq_dropout) for _ in range((2 + len(kernel_sizes)))]
         self.fc = nn.Linear(int(fm_first_size + fm_second_size), out_hidden_dim)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(out_drop)
         self.output_layer = nn.Linear(out_hidden_dim, 1)
+
+    def forward(self, inputs):
+        x_embedding = self.embedding(inputs)  # B x L x D
+        x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
+        x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
+
+        x_lstm, _ = self.lstm(x_embedding)
+        x_lstm = self.lstm_norm(x_lstm)
+
+        x_cnn = []
+        for layers in self.cnn_layers:
+            x = layers[0](x_lstm.transpose(1, 2))
+            x = layers[1](x)
+            x_cnn.append(x)
+
+        x_cnn = torch.cat(x_cnn, dim=1).transpose(1, 2)
+
+        x_lstm_attention = self.lstm_attention(x_lstm)
+        x_cnn_attention = self.cnn_attention(x_cnn)
+        x_avg_pool = torch.mean(x_cnn, 1)
+        x_max_pool, _ = torch.max(x_cnn, 1)
+
+        fm_first = [
+            x_lstm_attention,
+            x_cnn_attention,
+            x_avg_pool,
+            x_max_pool
+        ]
+
+        fm_first = [drop(x) for x, drop in zip(fm_first, self.fm_dropout_layers)]
+
+        fm_second = []
+        for t_1, t_2 in itertools.combinations(fm_first, 2):
+            fm_second.append(t_1 * t_2)
+
+        x_fc = self.fc(torch.cat(fm_first + fm_second, 1))
+        x_fc = self.dropout(self.relu(x_fc))
+        outputs = self.output_layer(x_fc)
+        return outputs
 
 
 class StackedBranchedCNNRNN(nn.Module):
