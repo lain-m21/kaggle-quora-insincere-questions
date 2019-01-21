@@ -44,7 +44,7 @@ class SCDV:
                                                                 self.word_idf_dict)
 
         self.logger.info('Compute SCDV vector for each text')
-        scdv_vectors = np.zeros([len(sequences), self.num_clusters * self.embedding_matrix.shape[1]])
+        scdv_vectors = np.zeros([len(sequences), self.num_clusters * self.embedding_matrix.shape[1]], dtype=np.float32)
         for i, seq in enumerate(sequences):
             scdv_vectors[i] = self._compute_scdv_vector(seq, self.prob_wordvecs, self.word_centroid_map, train=True)
 
@@ -57,7 +57,7 @@ class SCDV:
 
     def transform(self, sequences):
         self.logger.info('Compute SCDV vector for each text')
-        scdv_vectors = np.zeros([len(sequences), self.num_clusters * self.embedding_matrix.shape[1]])
+        scdv_vectors = np.zeros([len(sequences), self.num_clusters * self.embedding_matrix.shape[1]], dtype=np.float32)
         for i, seq in enumerate(sequences):
             scdv_vectors[i] = self._compute_scdv_vector(seq, self.prob_wordvecs, self.word_centroid_map, train=False)
 

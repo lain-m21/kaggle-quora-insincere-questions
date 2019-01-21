@@ -182,6 +182,7 @@ class Trainer:
 
                             if checkpoint_count >= self.num_snapshots:
                                 break
+                            self.model.train()
 
                     step_count += 1
                     progress_bar.update(1)
