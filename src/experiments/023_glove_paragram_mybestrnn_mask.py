@@ -43,7 +43,7 @@ def main(logger, args):
 
     logger.info('Pad train text data')
     seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
-    mask_train = np.not_equal(seq_train, 0).astype(np.float32)
+    mask_train = np.not_equal(seq_train, 0)
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
@@ -75,12 +75,12 @@ def main(logger, args):
     for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
         logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
         x_train = {
-            'sequence': seq_train[index_train],
-            'mask': mask_train[index_train]
+            'sequence': seq_train[index_train].astype(int),
+            'mask': mask_train[index_train].astype(np.float32)
         }
         x_valid = {
-            'sequence': seq_train[index_valid],
-            'mask': mask_train[index_valid]
+            'sequence': seq_train[index_valid].astype(int),
+            'mask': mask_train[index_valid].astype(np.float32)
         }
         y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
