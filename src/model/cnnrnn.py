@@ -56,16 +56,16 @@ class StackedBranchedCNNRNN(nn.Module):
 
         x_cnn_odd = []
         for layers in self.cnn_layers_odd:
-            x = layers[0][x_embedding]
-            x = layers[1][x]
-            x = layers[2][x]
+            x = layers[0](x_embedding)
+            x = layers[1](x)
+            x = layers[2](x)
             x_cnn_odd.append(x)
 
         x_cnn_even = []
         for layers in self.cnn_layers_even:
-            x = layers[0][x_embedding]
-            x = layers[1][x]
-            x = layers[2][x]
+            x = layers[0](x_embedding)
+            x = layers[1](x)
+            x = layers[2](x)
             x_cnn_even.append(x)
 
         x_cnn_odd = torch.cat(x_cnn_odd, dim=1).transpose(1, 2)  # B x D x L -> B x L x D
