@@ -80,7 +80,7 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_name = 'StackedCNNRNN'
+    model_name = 'SCDVMLP'
     skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
     oof_preds_optimized = np.zeros(seq_train.shape[0])
     oof_preds_majority = np.zeros(seq_train.shape[0])
