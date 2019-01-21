@@ -99,41 +99,41 @@ class Trainer:
             self.model.train()
             loss_epoch = 0
             self.logger.info(f'Epoch: {epoch + 1} / {self.epochs}')
-            for i, (inputs, targets) in tqdm(enumerate(train_loader)):
-                inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
+            with tqdm(total=n_iter) as progress_bar:
+                for i, (inputs, targets) in tqdm(enumerate(train_loader)):
+                    inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, targets)
-                loss_epoch += loss.item() / n_iter
+                    outputs = self.model(inputs)
+                    loss = self.criterion(outputs, targets)
+                    loss_epoch += loss.item() / n_iter
 
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step(closure=None)
-                if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
-                    checkpoint_flag = self.scheduler.batch_step()
-                    if checkpoint_flag:
-                        self.logger.info('Cyclic scheduler hit the bottom. Start evaluation.')
-                        eval_result = self.evaluate(valid_loader)
-                        eval_result['epoch'] = epoch
-                        eval_result['steps'] = step_count
-                        eval_result['fold'] = fold_idx
-                        eval_results.append(eval_result)
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step(closure=None)
+                    if self.scheduler_type == 'cyclic' and step_count > self.scheduler_trigger_steps:
+                        checkpoint_flag = self.scheduler.batch_step()
+                        if checkpoint_flag:
+                            self.logger.info('Cyclic scheduler hit the bottom. Start evaluation.')
+                            eval_result = self.evaluate(valid_loader)
+                            eval_result['epoch'] = epoch
+                            eval_result['steps'] = step_count
+                            eval_result['fold'] = fold_idx
+                            eval_results.append(eval_result)
 
-                        elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
-                        message = f'Fold: {fold_idx}, Epoch: {epoch} / {self.epochs}, Steps: {step_count} / {n_iter}, '
-                        message += f'Checkpoint: {checkpoint_count}, Train Loss: {loss_epoch}, '
-                        message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
-                        message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
-                        self.logger.info(message)
+                            elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
+                            message = f'Fold: {fold_idx}, Epoch: {epoch} / {self.epochs}, Steps: {step_count} / {n_iter}, '
+                            message += f'Checkpoint: {checkpoint_count}, Train Loss: {loss_epoch}, '
+                            message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
+                            message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
+                            self.logger.info(message)
 
-                        # TODO: tensorboard
+                            checkpoint_count += 1
+                            if checkpoint_count >= self.num_snapshots:
+                                break
+                            self.model.train()
 
-                        checkpoint_count += 1
-                        if checkpoint_count >= self.num_snapshots:
-                            break
-                        self.model.train()
-
-                step_count += 1
+                    step_count += 1
+                    progress_bar.update(1)
 
             if self.scheduler_type == 'step':
                 self.scheduler.step()
@@ -147,8 +147,6 @@ class Trainer:
                 message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
                 message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
                 self.logger.info(message)
-
-                # TODO: tensorboard
 
         return eval_results
 
