@@ -193,10 +193,8 @@ class TransformerEncoder(nn.Module):
             EncoderUnitLayer(embed_dim, inner_dim, num_head, k_dim, v_dim, dropout=dropout)
             for _ in range(num_layers)])
 
-    def forward(self, inputs, return_attentions=False):
+    def forward(self, inputs):
         src_seq, src_pos = inputs['sequence'], inputs['position']
-
-        enc_slf_attn_list = []
 
         # -- Prepare masks
         slf_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=src_seq)
@@ -207,9 +205,5 @@ class TransformerEncoder(nn.Module):
 
         for enc_layer in self.layer_stack:
             enc_output, enc_slf_attn = enc_layer(enc_output, non_pad_mask=non_pad_mask, slf_attn_mask=slf_attn_mask)
-            if return_attentions:
-                enc_slf_attn_list += [enc_slf_attn]
 
-        if return_attentions:
-            return enc_output, enc_slf_attn_list
-        return enc_output, None
+        return enc_output
