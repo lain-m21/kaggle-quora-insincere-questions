@@ -100,7 +100,7 @@ def main(logger, args):
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             model = TransformerEncoder(embedding_matrix, PADDING_LENGTH, num_layers=spec['num_layers'],
-                                       num_head=spec['num_head'], k_dim=spec['k_dim'], v_dim=['k_dim'],
+                                       num_head=spec['num_head'], k_dim=spec['k_dim'], v_dim=spec['k_dim'],
                                        inner_dim=spec['k_dim'] * spec['num_head'] * 4,
                                        dropout=0.3, out_drop=0.5, out_hidden_dim=64)
 
