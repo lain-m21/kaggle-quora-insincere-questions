@@ -104,7 +104,7 @@ def main(logger, args):
                 'batch_size': batch_size,
                 'output_device': output_device,
                 'criterion_type': 'bce',
-                'criterion_weights': [0.5, 0.5],
+                'criteria_weights': [0.5, 0.5],
                 'criterion_gamma': 2.0,
                 'criterion_alpha': 0.25,
                 'optimizer': 'adam',
