@@ -65,8 +65,6 @@ class BranchedMaskCNNRNN(nn.Module):
         x_cnn_attention  = []
         for x, layer in zip(x_cnn, self.cnn_attention_layers):
             x_attention, _ = layer(x, x)
-            if self.mask:
-                x_attention = x_attention * inputs['mask'].unsqueeze(-1)
             x_cnn_attention.append(x_attention)
 
         if self.mask:
@@ -172,8 +170,6 @@ class BranchedMaskCNNRNNAnother(nn.Module):
         x_cnn_attention  = []
         for x, layer in zip(x_cnn, self.cnn_attention_layers):
             x_attention, _ = layer(x, x)
-            if self.mask:
-                x_attention = x_attention * inputs['mask'].unsqueeze(-1)
             x_cnn_attention.append(x_attention)
 
         x_avg_pool_lstm = torch.mean(x_lstm, 1)
