@@ -12,7 +12,7 @@ class SmoothF1Loss(nn.Module):
 
     def forward(self, outputs, targets):
         if self.logit:
-            outputs = F.sigmoid(outputs)
+            outputs = torch.sigmoid(outputs)
         true_positive = outputs * targets
         precision = true_positive / (outputs + self.epsilon)
         recall = true_positive / (targets + self.epsilon)
@@ -31,7 +31,7 @@ class FocalLoss(nn.Module):
 
     def forward(self, outputs, targets):
         if self.logit:
-            outputs = F.sigmoid(outputs)
+            outputs = torch.sigmoid(outputs)
         outputs = torch.clamp(outputs, min=self.epsilon, max=1-self.epsilon)
 
         p_t = targets * outputs + (1 - targets) * (1 - outputs)
