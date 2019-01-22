@@ -3,16 +3,19 @@ import torch.nn as nn
 
 
 class Dense(nn.Module):
-    def __init__(self, in_features, out_features, dropout=0.2):
+    def __init__(self, in_features, out_features, dropout=0.2, activation='relu'):
         super(Dense, self).__init__()
 
         self.fc = nn.Linear(in_features, out_features)
-        self.relu = nn.ReLU()
+        if activation == 'relu':
+            self.activation = nn.ReLU()
+        elif activation == 'prelu':
+            self.activation = nn.PReLU()
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, inputs):
         x = self.fc(inputs)
-        x = self.relu(x)
+        x = self.activation(x)
         outputs = self.dropout(x)
         return outputs
 
