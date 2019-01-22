@@ -174,7 +174,7 @@ class TransformerEncoder(nn.Module):
     """
 
     def __init__(self,
-                 embedding_matrix, seq_length,
+                 embedding_matrix, seq_length, out_hidden_dim=64, out_drop=0.5,
                  num_layers=2, num_head=8,
                  k_dim=16, v_dim=16, inner_dim=256,
                  dropout=0.3):
@@ -193,6 +193,11 @@ class TransformerEncoder(nn.Module):
             EncoderUnitLayer(embed_dim, inner_dim, num_head, k_dim, v_dim, dropout=dropout)
             for _ in range(num_layers)])
 
+        self.fc = nn.Linear(embed_dim * 2, out_hidden_dim)
+        self.relu = nn.ReLU()
+        self.drop = nn.Dropout(out_drop)
+        self.output_layer = nn.Linear(out_hidden_dim, 1)
+
     def forward(self, inputs):
         src_seq, src_pos = inputs['sequence'], inputs['position']
 
@@ -204,6 +209,13 @@ class TransformerEncoder(nn.Module):
         enc_output = self.word_embedding(src_seq) + self.position_encoder(src_pos)
 
         for enc_layer in self.layer_stack:
-            enc_output, enc_slf_attn = enc_layer(enc_output, non_pad_mask=non_pad_mask, slf_attn_mask=slf_attn_mask)
+            enc_output, _ = enc_layer(enc_output, non_pad_mask=non_pad_mask, slf_attn_mask=slf_attn_mask)
 
-        return enc_output
+        pool_avg = torch.mean(enc_output, 1)
+        pool_max, _ = torch.max(enc_output, 1)
+
+        x_fc = torch.cat([pool_avg, pool_max], dim=1)
+        x_fc = self.drop(self.relu(self.fc(x_fc)))
+        outputs = self.output_layer(x_fc)
+
+        return outputs
