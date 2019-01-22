@@ -1,6 +1,47 @@
 import re
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+
+class SmoothF1Loss(nn.Module):
+    def __init__(self, logit=True, epsilon=1e-10):
+        super(SmoothF1Loss, self).__init__()
+        self.logit = logit
+        self.epsilon = epsilon
+
+    def forward(self, outputs, targets):
+        if self.logit:
+            outputs = F.sigmoid(outputs)
+        true_positive = outputs * targets
+        precision = true_positive / (outputs + self.epsilon)
+        recall = true_positive / (targets + self.epsilon)
+        smooth_f1_score = 2 * precision * recall / (precision + recall + self.epsilon)
+        return 1 - smooth_f1_score
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, logit=True, gamma=2.0, alpha=0.25, epsilon=1e-10):
+        super(FocalLoss, self).__init__()
+        self.logit = logit
+        self.gamma = gamma
+        self.alpha = alpha
+        self.epsilon = epsilon
+
+    def forward(self, outputs, targets):
+        if self.logit:
+            outputs = F.sigmoid(outputs)
+        outputs = torch.clamp(outputs, min=self.epsilon, max=1-self.epsilon)
+
+        p_t = targets * outputs + (1 - targets) * (1 - outputs)
+        alpha = torch.ones_like(outputs) * self.alpha
+        alpha_t = targets * alpha + (1 - targets) * (1 - alpha)
+
+        cross_entropy = F.binary_cross_entropy(outputs, targets)
+        weight = alpha_t * torch.pow((1 - p_t), self.gamma)
+        loss = weight * cross_entropy
+        loss = torch.mean(loss, 0)
+        return loss
 
 
 class L2Regulaization(nn.Module):
