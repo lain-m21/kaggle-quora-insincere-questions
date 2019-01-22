@@ -63,12 +63,17 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = ['focal', 'bce_focal']
+    model_specs = [{'gamma': 2.0, 'alpha': 0.25},
+                   {'gamma': 2.0, 'alpha': 0.50},
+                   {'gamma': 2.0, 'alpha': 0.75},
+                   {'gamma': 1.2, 'alpha': 0.25},
+                   {'gamma': 1.2, 'alpha': 0.50},
+                   {'gamma': 1.2, 'alpha': 0.75},]
 
     model_name_base = 'StackedRNNFM'
 
     for spec_id, spec in enumerate(model_specs):
-        model_name = model_name_base + f'specId={spec_id}_loss={spec}'
+        model_name = model_name_base + f'_specId={spec_id}_loss=focal_gamma={spec["gamma"]}_alpha={spec["alpha"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(seq_train.shape[0])
@@ -86,10 +91,10 @@ def main(logger, args):
                 'epochs': epochs,
                 'batch_size': batch_size,
                 'output_device': output_device,
-                'criterion_type': spec,
+                'criterion_type': 'focal',
                 'criteria_weights': [0.5, 0.5],
-                'criterion_gamma': 2.0,
-                'criterion_alpha': 0.25,
+                'criterion_gamma': spec['gamma'],
+                'criterion_alpha': spec['alpha'],
                 'optimizer': 'adam',
                 'optimizer_lr': 0.003,
                 'num_snapshots': NUM_SNAPSHOTS,
