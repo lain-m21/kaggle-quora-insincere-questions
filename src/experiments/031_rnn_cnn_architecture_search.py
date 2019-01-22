@@ -113,15 +113,15 @@ def main(logger, args):
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             if spec['architecture'] == 'rnn':
-                model = AttentionMaskRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2,
-                                                out_drop=0.3, attention_type='dot', mask=spec['mask'])
+                model = AttentionMaskRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=128, embed_drop=0.1,
+                                                out_drop=0.5, attention_type='dot', mask=spec['mask'])
             elif spec['architecture'] == 'cnn':
-                model = BranchedMaskCNNRNN(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2,
-                                           out_drop=0.3, attention_type='dot', mask=spec['mask'],
+                model = BranchedMaskCNNRNN(embedding_matrix, hidden_size=64, out_hidden_dim=128, embed_drop=0.1,
+                                           out_drop=0.5, attention_type='dot', mask=spec['mask'],
                                            pool_type=spec['pool_type'], kernel_sizes=(2, 7))
             else:
-                model = BranchedMaskCNNRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2,
-                                                  out_drop=0.3, attention_type='dot', mask=spec['mask'],
+                model = BranchedMaskCNNRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=128, embed_drop=0.1,
+                                                  out_drop=0.5, attention_type='dot', mask=spec['mask'],
                                                   pool_type=spec['pool_type'], kernel_sizes=(2, 7))
 
             config = {
