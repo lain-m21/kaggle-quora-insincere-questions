@@ -96,8 +96,8 @@ def main(logger, args):
             }
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
-            model = TransformerEncoder(embedding_matrix, PADDING_LENGTH, num_layers=2, num_head=8, k_dim=16, v_dim=16,
-                                       inner_dim=256, dropout=0.3)
+            model = TransformerEncoder(embedding_matrix, PADDING_LENGTH, num_layers=2, num_head=4, k_dim=8, v_dim=8,
+                                       inner_dim=64, dropout=0.3)
 
             config = {
                 'epochs': epochs,
