@@ -10,7 +10,7 @@ class StableSoftMax(nn.Module):
 
     def forward(self, inputs):
         x = torch.exp(inputs)
-        x = x / (x.sum(dim=-1) + 1e-10)
+        x = x / (x.sum(dim=-1, keepdim=True) + 1e-10)
         return x
 
 
