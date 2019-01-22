@@ -47,9 +47,12 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     logger.info('Load multiple embeddings')
-    embedding_matrices = load_multiple_embeddings(tokenizer.word_index, embed_types=[0, 2],
-                                                  max_workers=args['max_workers'])
-    embedding_matrix = np.array(embedding_matrices).mean(0)
+    if args['debug']:
+        embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300)
+    else:
+        embedding_matrices = load_multiple_embeddings(tokenizer.word_index, embed_types=[0, 2],
+                                                      max_workers=args['max_workers'])
+        embedding_matrix = np.array(embedding_matrices).mean(0)
 
     # ===== training and evaluation loop ===== #
     device_ids = args['device_ids']
