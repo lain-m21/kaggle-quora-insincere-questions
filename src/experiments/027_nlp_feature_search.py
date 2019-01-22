@@ -11,7 +11,7 @@ from keras.preprocessing.sequence import pad_sequences
 import torch
 
 from utils.logger import Logger, post_to_main_spreadsheet, post_to_snapshot_spreadsheet
-from utils.prepare_data import load_data, tokenize_text, load_multiple_embeddings, preprocess_text
+from utils.prepare_data import load_data, tokenize_text, load_multiple_embeddings, preprocess_text, extract_nlp_features
 from utils.trainer import Trainer
 
 from model.nlprnn import NLPFeaturesRNNFM
@@ -35,6 +35,8 @@ KFOLD = 5
 
 def main(logger, args):
     df_train, _ = load_data(INPUT_DIR, logger)
+    logger.info('Extract nlp features')
+    df_train = extract_nlp_features(df_train)
     logger.info('Preprocess text')
     if args['debug']:
         df_train = df_train.iloc[:200000]
