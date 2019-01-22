@@ -91,8 +91,8 @@ class MultiHeadAttention(nn.Module):
         output = output.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1)  # b x lq x (n*dv)
 
         output = self.dropout(self.fc(output))
-        # output = self.layer_norm(output + residual)
-        output = output + residual
+        output = self.layer_norm(output + residual)
+
         return output, attn
 
 
@@ -114,8 +114,7 @@ class PositionwiseFeedForward(nn.Module):
         output = self.w_2(F.relu(self.w_1(output)))
         output = output.transpose(1, 2)
         output = self.dropout(output)
-        # output = self.layer_norm(output + residual)
-        output = output + residual
+        output = self.layer_norm(output + residual)
         return output
 
 
@@ -210,6 +209,8 @@ class TransformerEncoder(nn.Module):
 
     def forward(self, inputs):
         src_seq, src_pos = inputs['sequence'], inputs['position']
+        import IPython
+        IPython.embed()
 
         # -- Prepare masks
         slf_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=src_seq)
