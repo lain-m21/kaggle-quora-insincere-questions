@@ -193,7 +193,8 @@ class TransformerEncoder(nn.Module):
             EncoderUnitLayer(embed_dim, inner_dim, num_head, k_dim, v_dim, dropout=dropout)
             for _ in range(num_layers)])
 
-    def forward(self, src_seq, src_pos, return_attentions=False):
+    def forward(self, inputs, return_attentions=False):
+        src_seq, src_pos = inputs['sequence'], inputs['position']
 
         enc_slf_attn_list = []
 
