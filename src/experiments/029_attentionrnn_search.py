@@ -43,6 +43,7 @@ def main(logger, args):
 
     logger.info('Pad train text data')
     seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
+    mask_train = np.not_equal(seq_train, 0)
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
@@ -82,7 +83,17 @@ def main(logger, args):
         results = []
         for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
             logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
-            x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
+            if spec['mask']:
+                x_train = {
+                    'sequence': seq_train[index_train].astype(int),
+                    'mask': mask_train[index_train].astype(np.float32)
+                }
+                x_valid = {
+                    'sequence': seq_train[index_valid].astype(int),
+                    'mask': mask_train[index_valid].astype(np.float32)
+                }
+            else:
+                x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             model = AttentionMaskRNN(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2, out_drop=0.3,
