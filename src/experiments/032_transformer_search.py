@@ -68,17 +68,20 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'gamma': 2.0, 'alpha': 0.25},
-                   {'gamma': 2.0, 'alpha': 0.50},
-                   {'gamma': 2.0, 'alpha': 0.75},
-                   {'gamma': 1.2, 'alpha': 0.25},
-                   {'gamma': 1.2, 'alpha': 0.50},
-                   {'gamma': 1.2, 'alpha': 0.75},]
+    model_specs = [{'num_head': 4, 'k_dim': 8, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 4, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 8, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.50},
+                   {'num_head': 4, 'k_dim': 8, 'num_layers': 3, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 8, 'num_layers': 3, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 16, 'num_layers': 3, 'dropout': 0.5}]
 
     model_name_base = 'StackedRNNFM'
 
     for spec_id, spec in enumerate(model_specs):
-        model_name = model_name_base + f'_specId={spec_id}_loss=focal_gamma={spec["gamma"]}_alpha={spec["alpha"]}'
+        model_name = model_name_base + f'_specId={spec_id}_numhead={spec["num_head"]}_kdim={spec["k_dim"]}'
+        model_name += f'_numlayers={spec["num_layers"]}_dropout={spec["dropout"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(seq_train.shape[0])
@@ -96,8 +99,10 @@ def main(logger, args):
             }
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
-            model = TransformerEncoder(embedding_matrix, PADDING_LENGTH, num_layers=2, num_head=4, k_dim=8, v_dim=8,
-                                       inner_dim=64, dropout=0.3)
+            model = TransformerEncoder(embedding_matrix, PADDING_LENGTH, num_layers=spec['num_layers'],
+                                       num_head=spec['num_head'], k_dim=spec['k_dim'], v_dim=['k_dim'],
+                                       inner_dim=spec['k_dim'] * spec['num_head'] * 4,
+                                       dropout=0.3, out_drop=0.5, out_hidden_dim=64)
 
             if args['debug']:
                 step_size = 100
