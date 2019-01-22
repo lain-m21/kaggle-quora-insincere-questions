@@ -735,7 +735,7 @@ def main(logger, args):
 
     with logger.timer('Load embeddings'):
         embedding_matrix = load_multiple_embeddings(tokenizer.word_index, embed_types=(0, 1), max_workers=2)
-    embedding_matrix = np.array(embedding_matrix).mean(0)
+    embedding_matrix = np.concatenate(embedding_matrix, axis=1)
 
     # ===== training and evaluation loop ===== #
 
