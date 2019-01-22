@@ -69,14 +69,8 @@ def main(logger, args):
     logger.info('Start training and evaluation loop')
 
     model_specs = [
-        {'architecture': 'cnn', 'mask': True, 'pool_type': 'avg'},
-        {'architecture': 'cnn', 'mask': True, 'pool_type': 'max'},
-        {'architecture': 'cnn', 'mask': True, 'pool_type': 'both'},
-        {'architecture': 'cnn', 'mask': False, 'pool_type': 'both'},
-        {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'avg'},
-        {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'max'},
-        {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'both'},
-        {'architecture': 'cnn_another', 'mask': False, 'pool_type': 'both'},
+        {'architecture': 'cnn', 'mask': False, 'pool_type': 'max'},
+        {'architecture': 'cnn_another', 'mask': False, 'pool_type': 'max'},
         {'architecture': 'rnn', 'mask': True},
         {'architecture': 'rnn', 'mask': False}
     ]
@@ -113,14 +107,14 @@ def main(logger, args):
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             if spec['architecture'] == 'rnn':
-                model = AttentionMaskRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=128, embed_drop=0.1,
+                model = AttentionMaskRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2,
                                                 out_drop=0.5, attention_type='dot', mask=spec['mask'])
             elif spec['architecture'] == 'cnn':
-                model = BranchedMaskCNNRNN(embedding_matrix, hidden_size=64, out_hidden_dim=128, embed_drop=0.1,
+                model = BranchedMaskCNNRNN(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2,
                                            out_drop=0.5, attention_type='dot', mask=spec['mask'],
                                            pool_type=spec['pool_type'], kernel_sizes=(2, 7))
             else:
-                model = BranchedMaskCNNRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=128, embed_drop=0.1,
+                model = BranchedMaskCNNRNNAnother(embedding_matrix, hidden_size=64, out_hidden_dim=64, embed_drop=0.2,
                                                   out_drop=0.5, attention_type='dot', mask=spec['mask'],
                                                   pool_type=spec['pool_type'], kernel_sizes=(2, 7))
 
