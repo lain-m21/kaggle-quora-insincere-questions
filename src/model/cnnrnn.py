@@ -29,7 +29,8 @@ class BranchedMaskCNNRNN(nn.Module):
 
         self.lstm_attention = GeneralAttention(hidden_size * 2, attention_type)
         self.gru_attention = GeneralAttention(hidden_size * 2, attention_type)
-        self.cnn_attention_layers = nn.ModuleList([GeneralAttention(hidden_size * 2, attention_type)])
+        self.cnn_attention_layers = nn.ModuleList([GeneralAttention(hidden_size * 2, attention_type)
+                                                   for _ in range(*kernel_sizes)])
 
         if pool_type == 'both':
             pool_factor = 2
@@ -94,7 +95,7 @@ class BranchedMaskCNNRNN(nn.Module):
             x_avg_pool_lstm,
             x_max_pool_lstm,
             x_avg_pool_gru,
-            x_max_pool_lstm
+            x_max_pool_gru
         ] + x_pool_cnn
 
         fm_second = []
@@ -195,7 +196,7 @@ class BranchedMaskCNNRNNAnother(nn.Module):
             x_avg_pool_lstm,
             x_max_pool_lstm,
             x_avg_pool_gru,
-            x_max_pool_lstm
+            x_max_pool_gru
         ] + x_pool_cnn
 
         fm_second = []
