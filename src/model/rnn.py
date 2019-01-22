@@ -22,8 +22,8 @@ class AttentionMaskRNN(nn.Module):
         self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
         self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)
 
-        self.lstm_attention = GeneralAttention(hidden_size * 2, attention_type)
-        self.gru_attention = GeneralAttention(hidden_size * 2, attention_type)
+        self.lstm_attention, _ = GeneralAttention(hidden_size * 2, attention_type)
+        self.gru_attention, _ = GeneralAttention(hidden_size * 2, attention_type)
 
         fm_first_size = hidden_size * 2 * 4
         fm_second_size = hidden_size * 2 * sp.special.comb(4, 2)
