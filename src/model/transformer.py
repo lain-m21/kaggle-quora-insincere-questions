@@ -177,7 +177,7 @@ class TransformerEncoder(nn.Module):
                  embedding_matrix, seq_length,
                  num_layers=2, num_head=8,
                  k_dim=16, v_dim=16, inner_dim=256,
-                 dropout=0.2):
+                 dropout=0.3):
         super().__init__()
 
         n_position = seq_length + 1
@@ -211,4 +211,4 @@ class TransformerEncoder(nn.Module):
 
         if return_attentions:
             return enc_output, enc_slf_attn_list
-        return enc_output,
+        return enc_output, None
