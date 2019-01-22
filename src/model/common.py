@@ -47,7 +47,7 @@ class Attention(nn.Module):
         if mask is not None:
             a = a * mask
 
-        a = a / torch.sum(a, 1, keepdim=True) + 1e-10
+        a = a / (torch.sum(a, 1, keepdim=True) + 1e-12)
 
         weighted_inputs = inputs * torch.unsqueeze(a, -1)
         return torch.sum(weighted_inputs, 1)
