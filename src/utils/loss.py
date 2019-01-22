@@ -17,7 +17,8 @@ class SmoothF1Loss(nn.Module):
         precision = true_positive / (outputs + self.epsilon)
         recall = true_positive / (targets + self.epsilon)
         smooth_f1_score = 2 * precision * recall / (precision + recall + self.epsilon)
-        return 1 - smooth_f1_score
+        loss = torch.mean(1 - smooth_f1_score, 0)
+        return loss
 
 
 class FocalLoss(nn.Module):
