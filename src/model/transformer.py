@@ -4,6 +4,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class StableSoftMax(nn.Module):
+    def __init__(self):
+        super(StableSoftMax, self).__init__()
+
+    def forward(self, inputs):
+        x = torch.exp(inputs)
+        x = x / (x.sum(dim=-1) + 1e-10)
+        return x
+
+
 class ScaledDotProductAttention(nn.Module):
     """
     Scaled Dot-Product Attention
@@ -13,7 +23,7 @@ class ScaledDotProductAttention(nn.Module):
         super().__init__()
         self.temperature = temperature
         self.dropout = nn.Dropout(attn_dropout)
-        self.softmax = nn.Softmax(dim=2)
+        self.softmax = StableSoftMax()
 
     def forward(self, q, k, v, mask=None):
 
@@ -175,15 +185,14 @@ class TransformerEncoder(nn.Module):
 
     def __init__(self,
                  embedding_matrix, seq_length, out_hidden_dim=64, out_drop=0.5,
-                 num_layers=2, num_head=8,
-                 k_dim=16, v_dim=16, inner_dim=256,
+                 num_layers=2, num_head=8, k_dim=16, v_dim=16, inner_dim=256,
                  dropout=0.3):
         super().__init__()
 
         n_position = seq_length + 1
         embed_dim = embedding_matrix.shape[1]
 
-        self.word_embedding = nn.Embedding.from_pretrained(torch.FloatTensor(embedding_matrix))
+        self.word_embedding = nn.Embedding.from_pretrained(torch.FloatTensor(embedding_matrix), freeze=True)
 
         self.position_encoder = nn.Embedding.from_pretrained(
             get_sinusoid_encoding_table(n_position, embed_dim, padding_idx=0),
