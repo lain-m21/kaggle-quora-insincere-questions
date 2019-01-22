@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 
 from .loaders import SimpleDataset, DictDataset, BinaryOverSampler, BinaryBalancedSampler, worker_init_fn
 from .metrics import f1_from_logits_with_threshold
+from .loss import SmoothF1Loss, FocalLoss
 
 
 def set_torch_environment(num_threads=2):
@@ -32,7 +33,23 @@ class Trainer:
         self.output_device = config['output_device']
         self.model.to(self.output_device)
 
-        self.criterion = nn.BCEWithLogitsLoss(reduction='mean')
+        self.criterion = None
+        self.criteria = None
+        if config['criterion_type'] == 'bce':
+            self.criterion = nn.BCEWithLogitsLoss(reduction='mean')
+        elif config['criterion_type'] == 'f1':
+            self.criterion = SmoothF1Loss(logit=True)
+        elif config['criterion_type'] == 'focal':
+            self.criterion = FocalLoss(logit=True, gamma=config['criterion_gamma'], alpha=config['criterion_alpha'])
+        elif config['criterion_type'] == 'bce_f1':
+            self.criteria = [[nn.BCEWithLogitsLoss(reduction='mean'), SmoothF1Loss(logit=True)],
+                             config['criteria_weights']]
+        elif config['criterion_type'] == 'bce_focal':
+            self.criteria = [[nn.BCEWithLogitsLoss(reduction='mean'),
+                              FocalLoss(logit=True, gamma=config['criterion_gamma'], alpha=config['criterion_alpha'])],
+                             config['criteria_weights']]
+        else:
+            self.criterion = nn.BCEWithLogitsLoss(reduction='mean')
 
         # optimizer
         if config['optimizer'] == 'adam':
@@ -104,7 +121,15 @@ class Trainer:
                     inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                     outputs = self.model(inputs)
-                    loss = self.criterion(outputs, targets)
+                    if self.criterion is not None:
+                        loss = self.criterion(outputs, targets)
+                    else:
+                        loss = 0
+                        criteria = self.criteria[0]
+                        weights = self.criteria[1]
+                        for criterion, weight in zip(criteria, weights):
+                            loss += weight * criterion(outputs, targets)
+
                     loss_epoch += loss.item() / n_iter
 
                     self.optimizer.zero_grad()
@@ -168,7 +193,15 @@ class Trainer:
                     inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                     outputs = self.model(inputs)
-                    loss = self.criterion(outputs, targets)
+                    if self.criterion is not None:
+                        loss = self.criterion(outputs, targets)
+                    else:
+                        loss = 0
+                        criteria = self.criteria[0]
+                        weights = self.criteria[1]
+                        for criterion, weight in zip(criteria, weights):
+                            loss += weight * criterion(outputs, targets)
+
                     loss_epoch += loss.item() / n_iter
 
                     self.optimizer.zero_grad()
@@ -208,7 +241,15 @@ class Trainer:
                 inputs, targets = self._tensors_to_gpu(inputs), self._tensors_to_gpu(targets)
 
                 outputs = self.model(inputs)
-                loss = self.criterion(outputs, targets)
+                if self.criterion is not None:
+                    loss = self.criterion(outputs, targets)
+                else:
+                    loss = 0
+                    criteria = self.criteria[0]
+                    weights = self.criteria[1]
+                    for criterion, weight in zip(criteria, weights):
+                        loss += weight * criterion(outputs, targets)
+
                 loss_eval += loss.item() / n_iter
 
                 total_outputs.append(self._tensors_to_numpy(outputs))
