@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import pandas as pd
 from functools import partial
@@ -5,7 +6,7 @@ from multiprocessing import Pool
 
 from keras.preprocessing.text import Tokenizer
 
-from .preprocess import clean_text, clean_numbers, replace_typical_misspell
+from .preprocess import clean_text, clean_numbers, replace_typical_misspell, puncts
 
 
 def load_data(input_dir, logger):
@@ -53,6 +54,10 @@ def extract_nlp_features(df):
     df['n_capitals'] = df['question_text'].apply(lambda x: sum(1 for c in x if c.isupper()))
     df['n_words'] = df['question_text'].str.count('\S+')
     df['n_unique_words'] = df['question_text'].apply(lambda x: len(set(w for w in x.split())))
+    df['n_puncts'] = df['question_text'].apply(lambda x: sum(1 for c in x if c in set(puncts)))
+    df['n_?'] = df['question_text'].apply(lambda x: sum(1 for c in x if c == '?'))
+    df['n_!'] = df['question_text'].apply(lambda x: sum(1 for c in x if c == '!'))
+    df['n_you'] = df['question_text'].apply(lambda x: len(re.findall(r'you[^~a-z]', x.lower())))
     return df
 
 
