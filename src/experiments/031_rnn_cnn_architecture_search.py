@@ -47,10 +47,13 @@ def main(logger, args):
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
-    logger.info('Load multiple embeddings')
-    embedding_matrices = load_multiple_embeddings(tokenizer.word_index, embed_types=[0, 2],
-                                                  max_workers=args['max_workers'])
-    embedding_matrix = np.array(embedding_matrices).mean(0)
+    if args['debug']:
+        embedding_matrix = np.random.rand(len(tokenizer.word_index) + 1, 300).astype(np.float32)
+    else:
+        logger.info('Load multiple embeddings')
+        embedding_matrices = load_multiple_embeddings(tokenizer.word_index, embed_types=[0, 2],
+                                                      max_workers=args['max_workers'])
+        embedding_matrix = np.array(embedding_matrices).mean(0)
 
     # ===== training and evaluation loop ===== #
     device_ids = args['device_ids']
@@ -64,16 +67,18 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'architecture': 'rnn', 'mask': True},
-                   {'architecture': 'rnn', 'mask': False},
-                   {'architecture': 'cnn', 'mask': True, 'pool_type': 'avg'},
-                   {'architecture': 'cnn', 'mask': True, 'pool_type': 'max'},
-                   {'architecture': 'cnn', 'mask': True, 'pool_type': 'both'},
-                   {'architecture': 'cnn', 'mask': False, 'pool_type': 'both'},
-                   {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'avg'},
-                   {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'max'},
-                   {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'both'},
-                   {'architecture': 'cnn_another', 'mask': False, 'pool_type': 'both'}]
+    model_specs = [
+        {'architecture': 'cnn', 'mask': True, 'pool_type': 'avg'},
+        {'architecture': 'cnn', 'mask': True, 'pool_type': 'max'},
+        {'architecture': 'cnn', 'mask': True, 'pool_type': 'both'},
+        {'architecture': 'cnn', 'mask': False, 'pool_type': 'both'},
+        {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'avg'},
+        {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'max'},
+        {'architecture': 'cnn_another', 'mask': True, 'pool_type': 'both'},
+        {'architecture': 'cnn_another', 'mask': False, 'pool_type': 'both'},
+        {'architecture': 'rnn', 'mask': True},
+        {'architecture': 'rnn', 'mask': False}
+    ]
 
     model_name_base_rnn = 'AttentionMaskRNNAnother'
     model_name_base_cnn = 'BranchedMaskCNNRNN'
