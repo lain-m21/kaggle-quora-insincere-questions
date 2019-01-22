@@ -99,6 +99,13 @@ def main(logger, args):
             model = TransformerEncoder(embedding_matrix, PADDING_LENGTH, num_layers=2, num_head=4, k_dim=8, v_dim=8,
                                        inner_dim=64, dropout=0.3)
 
+            if args['debug']:
+                step_size = 100
+                scheduler_trigger_steps = 300
+            else:
+                step_size = 1200
+                scheduler_trigger_steps = 4000
+
             config = {
                 'epochs': epochs,
                 'batch_size': batch_size,
@@ -113,10 +120,10 @@ def main(logger, args):
                 'scheduler_type': 'cyclic',
                 'base_lr': 0.00001,
                 'max_lr': 0.003,
-                'step_size': 1200,
+                'step_size': step_size,
                 'scheduler_mode': 'triangular',
                 'scheduler_gamma': 0.9,
-                'scheduler_trigger_steps': 4000,
+                'scheduler_trigger_steps': scheduler_trigger_steps,
                 'sampler_type': 'normal',
                 'seed': SEED
             }
