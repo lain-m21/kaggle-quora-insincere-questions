@@ -68,7 +68,7 @@ def main(logger, args):
 
     model_specs = []
     for sampler_type in ['over']:
-        for over_sample_factor in [[1.5, 2100], [2, 2160], [3, 2290], [5, 2540], [10, 3170]]:
+        for over_sample_factor in [[5, 2540], [10, 3170]]:
             model_specs.append({'sampler_type': sampler_type,
                                 'over_sample_factor': over_sample_factor[0],
                                 'steps_per_epoch': over_sample_factor[1]})
