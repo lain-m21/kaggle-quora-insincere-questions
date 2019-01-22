@@ -63,7 +63,7 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = ['f1', 'focal', 'bce_f1', 'bce_focal']
+    model_specs = ['focal', 'bce_focal']
 
     model_name_base = 'StackedRNNFM'
 
