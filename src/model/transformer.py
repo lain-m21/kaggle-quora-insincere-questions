@@ -209,8 +209,6 @@ class TransformerEncoder(nn.Module):
 
     def forward(self, inputs):
         src_seq, src_pos = inputs['sequence'], inputs['position']
-        import IPython
-        IPython.embed()
 
         # -- Prepare masks
         slf_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=src_seq)
