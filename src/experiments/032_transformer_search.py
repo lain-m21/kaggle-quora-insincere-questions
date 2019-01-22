@@ -43,7 +43,8 @@ def main(logger, args):
 
     logger.info('Pad train text data')
     seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH, padding='post', truncating='post')
-    pos_train = np.array([[idx + 1 if t != 0 else 0 for idx, t in enumerate(seq)] for seq in seq_train], dtype=int)
+    pos_train = np.repeat([np.arange(PADDING_LENGTH) + 1], seq_train.shape[0], axis=0)
+    pos_train = pos_train * np.not_equal(seq_train, 0)
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
