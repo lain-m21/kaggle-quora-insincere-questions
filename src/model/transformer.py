@@ -126,14 +126,18 @@ class EncoderUnitLayer(nn.Module):
     def __init__(self, embed_dim, inner_dim, num_head, k_dim, v_dim, dropout=0.1):
         super(EncoderUnitLayer, self).__init__()
         self.self_attention = MultiHeadAttention(num_head, embed_dim, k_dim, v_dim, dropout=dropout)
-        # self.feedforward = PositionwiseFeedForward(embed_dim, inner_dim, dropout=dropout)
+        if inner_dim == 0:
+            self.feedforward = None
+        else:
+            self.feedforward = PositionwiseFeedForward(embed_dim, inner_dim, dropout=dropout)
 
     def forward(self, enc_input, non_pad_mask=None, slf_attn_mask=None):
         enc_output, enc_slf_attn = self.self_attention(enc_input, enc_input, enc_input, mask=slf_attn_mask)
         enc_output *= non_pad_mask
 
-        # enc_output = self.feedforward(enc_output)
-        # enc_output *= non_pad_mask
+        if self.feedforward is not None:
+            enc_output = self.feedforward(enc_output)
+            enc_output *= non_pad_mask
 
         return enc_output, enc_slf_attn
 
