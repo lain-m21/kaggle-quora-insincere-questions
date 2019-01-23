@@ -51,8 +51,8 @@ class TransformerRNN(nn.Module):
         if self.add_position:
             x_lstm += x_pos
             x_gru += x_pos
-        x_lstm_attention = self.lstm_attention(x_lstm, non_pad_mask, attention_mask)
-        x_gru_attention = self.gru_attention(x_gru, non_pad_mask, attention_mask)
+        x_lstm_attention, _ = self.lstm_attention(x_lstm, non_pad_mask, attention_mask)
+        x_gru_attention, _ = self.gru_attention(x_gru, non_pad_mask, attention_mask)
 
         x_avg_pool_lstm = torch.mean(x_lstm_attention, 1)
         x_max_pool_lstm, _ = torch.max(x_lstm_attention, 1)
