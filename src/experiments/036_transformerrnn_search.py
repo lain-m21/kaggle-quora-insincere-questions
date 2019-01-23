@@ -78,7 +78,7 @@ def main(logger, args):
 
     for spec_id, spec in enumerate(model_specs):
         model_name = model_name_base + f'_specId={spec_id}_numhead={spec["num_head"]}_kdim={spec["k_dim"]}'
-        model_name += f'_addposition={spec["add_position"]}_innerdim={spec["innerdim"]}'
+        model_name += f'_addposition={spec["add_position"]}_innerdim={spec["inner_dim"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(seq_train.shape[0])
