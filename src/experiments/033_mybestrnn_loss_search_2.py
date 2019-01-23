@@ -63,10 +63,7 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'gamma': 2.0, 'alpha': 0.90, 'combined': False, 'weight': 1.0},
-                   {'gamma': 3.0, 'alpha': 0.25, 'combined': False, 'weight': 1.0},
-                   {'gamma': 3.0, 'alpha': 0.50, 'combined': False, 'weight': 1.0},
-                   {'gamma': 2.0, 'alpha': 0.75, 'combined': True, 'weight': 1.0},
+    model_specs = [{'gamma': 2.0, 'alpha': 0.75, 'combined': True, 'weight': 1.0},
                    {'gamma': 2.0, 'alpha': 0.75, 'combined': True, 'weight': 3.0},
                    {'gamma': 2.0, 'alpha': 0.75, 'combined': True, 'weight': 5.0},
                    {'gamma': 3.0, 'alpha': 0.50, 'combined': True, 'weight': 1.0}]
