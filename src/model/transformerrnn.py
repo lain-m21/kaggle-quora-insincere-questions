@@ -17,7 +17,7 @@ class TransformerRNN(nn.Module):
 
         self.word_embedding = nn.Embedding.from_pretrained(torch.FloatTensor(embedding_matrix), freeze=True)
         self.position_embedding = nn.Embedding.from_pretrained(
-            get_sinusoid_encoding_table(n_position, hidden_dim * 2, padding_idx=0),
+            get_sinusoid_encoding_table(n_position, embed_dim, padding_idx=0),
             freeze=True)
         self.embedding_dropout = nn.Dropout2d(embed_drop)
 
