@@ -64,21 +64,19 @@ def main(logger, args):
     logger.info('Start training and evaluation loop')
 
     model_specs = []
-    for epochs in [4, 5]:
+    for epochs in [5, 6]:
         for trigger in [1, 2]:
             for batch_size in [512, 1024]:
-                for base_lr in [0.0001, 0.00001]:
-                    for max_lr in [0.001, 0.003]:
-                        for scheduler_type in ['triangular', 'cosine']:
-                            model_specs.append({'epochs': epochs, 'trigger': trigger, 'batch_size': batch_size,
-                                                'base_lr': base_lr, 'max_lr': max_lr, 'scheduler_type': scheduler_type})
+                for base_lr in [0.0001, 0.0005]:
+                    for max_lr in [0.003, 0.005]:
+                        model_specs.append({'epochs': epochs, 'trigger': trigger, 'batch_size': batch_size,
+                                            'base_lr': base_lr, 'max_lr': max_lr})
 
     model_name_base = 'StackedRNNFM'
 
     for spec_id, spec in enumerate(model_specs):
         model_name = model_name_base + f'_specId={spec_id}_epochs={spec["epochs"]}_trigger={spec["trigger"]}'
         model_name += f'_batchsize={spec["batch_size"]}_baselr={spec["base_lr"]}_maxlr={spec["max_lr"]}'
-        model_name += f'_schedulertype={spec["scheduler_type"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(seq_train.shape[0])
@@ -98,7 +96,6 @@ def main(logger, args):
             batch_size = spec['batch_size']
             base_lr = spec['base_lr']
             max_lr = spec['max_lr']
-            scheduler_type = spec['scheduler_type']
 
             steps_per_epoch = x_train.shape[0] // batch_size
             scheduler_trigger_steps = steps_per_epoch * spec['trigger']
@@ -119,7 +116,7 @@ def main(logger, args):
                 'base_lr': base_lr,
                 'max_lr': max_lr,
                 'step_size': step_size,
-                'scheduler_mode': scheduler_type,
+                'scheduler_mode': 'triangular',
                 'scheduler_gamma': 0.9,
                 'scheduler_trigger_steps': scheduler_trigger_steps,
                 'sampler_type': 'normal',
