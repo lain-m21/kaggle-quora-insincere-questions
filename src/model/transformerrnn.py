@@ -3,13 +3,13 @@ import scipy as sp
 import torch
 import torch.nn as nn
 
-from .common import Attention, Dense
-from .transformer import EncoderUnitLayer, get_sinusoid_encoding_table, get_attn_key_pad_mask, get_non_pad_mask
+from .common import Attention, Dense, GeneralAttention
+from .transformer import get_sinusoid_encoding_table, get_non_pad_mask
 
 
 class TransformerRNN(nn.Module):
     def __init__(self, embedding_matrix, seq_length, hidden_dim=64, out_hidden_dim=64, out_drop=0.3, embed_drop=0.2,
-                 num_head=8, k_dim=16, inner_dim=0, trans_drop=0.2):
+                 trans_drop=0.2, attention_type='dot', num_layers=2):
         super(TransformerRNN, self).__init__()
 
         n_position = seq_length + 1
@@ -21,8 +21,9 @@ class TransformerRNN(nn.Module):
             freeze=True)
         self.embedding_dropout = nn.Dropout2d(embed_drop)
 
-        self.transformer = EncoderUnitLayer(embed_dim, inner_dim=inner_dim, num_head=num_head,
-                                            k_dim=k_dim, v_dim=k_dim, dropout=trans_drop)
+        self.transformer_layers = nn.ModuleList([
+            GeneralAttention(embed_dim, attention_type=attention_type)
+        ] for _ in range(num_layers))
         self.transformer_avg_fc = Dense(embed_dim, hidden_dim * 2, dropout=trans_drop, activation='relu')
         self.transformer_max_fc = Dense(embed_dim, hidden_dim * 2, dropout=trans_drop, activation='relu')
 
@@ -41,13 +42,15 @@ class TransformerRNN(nn.Module):
 
     def forward(self, inputs):
         seq, pos = inputs['sequence'], inputs['position']
-        attention_mask = get_attn_key_pad_mask(seq, seq)
         non_pad_mask = get_non_pad_mask(seq)
 
         x_embed = self.word_embedding(seq)
         x_pos = self.position_embedding(pos)
 
-        x_trans, _ = self.transformer(x_embed + x_pos, non_pad_mask, attention_mask)
+        x_trans = x_embed + x_pos
+        for layer in self.transformer_layers:
+            x_trans, _ = layer(x_trans, x_trans)
+            x_trans = x_trans *non_pad_mask
 
         x_embed_rnn = self.embedding_dropout(torch.unsqueeze(x_embed, 0).transpose(1, 3))
         x_embed_rnn = torch.squeeze(x_embed_rnn.transpose(1, 3))
