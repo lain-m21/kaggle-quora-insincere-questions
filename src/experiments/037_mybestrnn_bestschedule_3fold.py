@@ -74,8 +74,6 @@ def main(logger, args):
     oof_preds_majority = np.zeros(seq_train.shape[0])
     results = []
     for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
-        if fold > 0:
-            break
         logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
         x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
         y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
