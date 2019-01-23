@@ -70,17 +70,16 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'num_head': 4, 'k_dim': 16, 'inner_dim': 0},
-                   {'num_head': 4, 'k_dim': 16, 'inner_dim': 128},
-                   {'num_head': 8, 'k_dim': 16, 'inner_dim': 0},
-                   {'num_head': 8, 'k_dim': 32, 'inner_dim': 0},
-                   {'num_head': 8, 'k_dim': 16, 'inner_dim': 256}]
+    model_specs = [{'attention_type': 'general', 'num_layers': 2},
+                   {'attention_type': 'dot', 'num_layers': 2},
+                   {'attention_type': 'general', 'num_layers': 1},
+                   {'attention_type': 'dot', 'num_layers': 1}]
 
     model_name_base = 'TransformerRNN'
 
     for spec_id, spec in enumerate(model_specs):
-        model_name = model_name_base + f'_specId={spec_id}_numhead={spec["num_head"]}_kdim={spec["k_dim"]}'
-        model_name += f'_innerdim={spec["inner_dim"]}'
+        model_name = model_name_base + f'_specId={spec_id}_attentiontype={spec["attention_type"]}'
+        model_name += f'_numlayers={spec["num_layers"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(seq_train.shape[0])
@@ -99,8 +98,7 @@ def main(logger, args):
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             model = TransformerRNN(embedding_matrix, PADDING_LENGTH, hidden_dim=64, out_hidden_dim=64, out_drop=0.3,
-                                   embed_drop=0.2, num_head=spec['num_head'], k_dim=spec['k_dim'], trans_drop=0.2,
-                                   inner_dim=spec['inner_dim'])
+                                   embed_drop=0.2, attention_type=spec['attention_type'], num_layers=spec['num_layers'])
 
             steps_per_epoch = seq_train[index_train].shape[0] // batch_size
             scheduler_trigger_steps = steps_per_epoch * trigger
