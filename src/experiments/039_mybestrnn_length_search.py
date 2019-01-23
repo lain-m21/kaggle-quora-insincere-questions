@@ -42,9 +42,6 @@ def main(logger, args):
         df_train = preprocess_text(df_train)
     seq_train, tokenizer = tokenize_text(df_train, logger)
 
-    logger.info('Pad train text data')
-    seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
-
     label_train = df_train['target'].values.reshape(-1, 1)
 
     logger.info('Load multiple embeddings')
@@ -78,7 +75,10 @@ def main(logger, args):
         results = []
         for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
             logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
-            x_train, x_valid = seq_train[index_train].astype(int), seq_train[index_valid].astype(int)
+            logger.info('Pad train text data')
+            seq_train_ = pad_sequences(seq_train, maxlen=spec)
+
+            x_train, x_valid = seq_train_[index_train].astype(int), seq_train_[index_valid].astype(int)
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             model = StackedRNNFM(embedding_matrix, spec, hidden_size=64, out_hidden_dim=64,
