@@ -23,7 +23,8 @@ class TransformerRNN(nn.Module):
 
         self.transformer_layers = nn.ModuleList([
             GeneralAttention(embed_dim, attention_type=attention_type)
-        ] for _ in range(num_layers))
+            for _ in range(num_layers)
+        ])
         self.transformer_avg_fc = Dense(embed_dim, hidden_dim * 2, dropout=trans_drop, activation='relu')
         self.transformer_max_fc = Dense(embed_dim, hidden_dim * 2, dropout=trans_drop, activation='relu')
 
