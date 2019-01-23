@@ -68,11 +68,11 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'num_head': 8, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.5},
-                   {'num_head': 8, 'k_dim': 32, 'num_layers': 2, 'dropout': 0.5},
-                   {'num_head': 16, 'k_dim': 8, 'num_layers': 2, 'dropout': 0.5},
-                   {'num_head': 16, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.5},
-                   {'num_head': 8, 'k_dim': 16, 'num_layers': 3, 'dropout': 0.5}]
+    model_specs = [{'num_head': 8, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 32, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 16, 'k_dim': 8, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 16, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.25},
+                   {'num_head': 8, 'k_dim': 16, 'num_layers': 3, 'dropout': 0.25}]
 
     model_name_base = 'Transformer'
 
@@ -117,11 +117,11 @@ def main(logger, args):
                 'criterion_gamma': 2.0,
                 'criterion_alpha': 0.75,
                 'optimizer': 'adam',
-                'optimizer_lr': 0.001,
+                'optimizer_lr': 0.0003,
                 'num_snapshots': NUM_SNAPSHOTS,
                 'scheduler_type': 'cyclic',
                 'base_lr': 0.00001,
-                'max_lr': 0.001,
+                'max_lr': 0.0003,
                 'step_size': step_size,
                 'scheduler_mode': 'triangular',
                 'scheduler_gamma': 0.9,
