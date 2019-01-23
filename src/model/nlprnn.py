@@ -48,7 +48,7 @@ class NLPFeaturesRNN(nn.Module):
         fm_second_size_nlp = nlp_hidden_dim * sp.special.comb(input_shapes['continuous'], 2)
 
         fm_first_size_seq = hidden_size * 2 * 4
-        fm_second_size_seq = hidden_size * 2 * 4 * sp.special.comb(4, 2)
+        fm_second_size_seq = hidden_size * 2 * sp.special.comb(4, 2)
 
         if factorize:
             fc_size = fm_first_size_seq + fm_second_size_seq + fm_first_size_nlp + fm_second_size_nlp
