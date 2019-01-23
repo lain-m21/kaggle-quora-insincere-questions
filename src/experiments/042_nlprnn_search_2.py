@@ -93,7 +93,8 @@ def main(logger, args):
     model_name_base = 'NLPFeaturesRNN'
 
     for spec_id, spec in enumerate(model_specs):
-        model_name = model_name_base + f'_specId={spec_id}_dropdir={spec["drop_dir"]}_embeddrop={spec["embed_drop"]}'
+        model_name = model_name_base + f'_specId={spec_id}_nlpdim={spec["nlp_dim"]}_nlpdrop={spec["nlp_dropout"]}'
+        model_name += f'_activate={spec["activate"]}_factorize={spec["factorize"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(len(seq_train))
@@ -114,7 +115,7 @@ def main(logger, args):
             model = NLPFeaturesRNN({'continuous': len(x_continuous)}, embedding_matrix, PADDING_LENGTH,
                                    hidden_size=64, out_hidden_dim=64, out_drop=0.3, embed_drop=0.2,
                                    dense_activate=spec['activate'], nlp_hidden_dim=spec['nlp_dim'], mask=False,
-                                   nlp_dropout=spec['nlp_drop'], factorize=spec['factorize'], embed_dropout_direction=0)
+                                   nlp_dropout=spec['nlp_dropout'], factorize=spec['factorize'], embed_dropout_direction=0)
 
             steps_per_epoch = len(df_train) // batch_size
             scheduler_trigger_steps = steps_per_epoch * trigger
