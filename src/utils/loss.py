@@ -42,7 +42,7 @@ class FocalLoss(nn.Module):
         weight = alpha_t * torch.pow((1 - p_t), self.gamma)
         loss = weight * cross_entropy
         loss = torch.mean(loss, 0)
-        return loss
+        return loss.squeeze(0)
 
 
 class L2Regulaization(nn.Module):
