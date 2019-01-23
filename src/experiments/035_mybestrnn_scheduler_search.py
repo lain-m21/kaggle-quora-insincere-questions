@@ -67,7 +67,7 @@ def main(logger, args):
     for epochs in [5, 6]:
         for trigger in [1, 2]:
             for batch_size in [512, 1024]:
-                for base_lr in [0.0001, 0.0005]:
+                for base_lr in [0.001, 0.0005]:
                     for max_lr in [0.003, 0.005]:
                         model_specs.append({'epochs': epochs, 'trigger': trigger, 'batch_size': batch_size,
                                             'base_lr': base_lr, 'max_lr': max_lr})
