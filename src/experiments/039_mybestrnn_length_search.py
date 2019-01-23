@@ -70,8 +70,8 @@ def main(logger, args):
         model_name = model_name_base + f'_specId={spec_id}_length={spec}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
-        oof_preds_optimized = np.zeros(seq_train.shape[0])
-        oof_preds_majority = np.zeros(seq_train.shape[0])
+        oof_preds_optimized = np.zeros(len(seq_train))
+        oof_preds_majority = np.zeros(len(seq_train))
         results = []
         for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
             logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
