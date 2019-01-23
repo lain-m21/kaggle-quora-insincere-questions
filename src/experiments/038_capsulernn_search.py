@@ -28,6 +28,7 @@ SCRIPT_NAME = Path(__file__).stem
 SEED = 42
 PADDING_LENGTH = 60
 EPOCHS = 5
+TRIGGER = 1
 NUM_SNAPSHOTS = 5
 KFOLD = 5
 
@@ -65,20 +66,19 @@ def main(logger, args):
 
     batch_size = args['batch_size'] * len(device_ids)
     epochs = EPOCHS
+    trigger = TRIGGER
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'num_head': 8, 'k_dim': 16, 'add_position': True, 'inner_dim': 0},
-                   {'num_head': 8, 'k_dim': 16, 'add_position': False, 'inner_dim': 0},
-                   {'num_head': 8, 'k_dim': 16, 'add_position': True, 'inner_dim': 256},
-                   {'num_head': 8, 'k_dim': 32, 'add_position': True, 'inner_dim': 0},
-                   {'num_head': 16, 'k_dim': 16, 'add_position': True, 'inner_dim': 0}]
+    model_specs = [{'num_capsule': 8, 'routings': 4},
+                   {'num_capsule': 16, 'routings': 4},
+                   {'num_capsule': 16, 'routings': 2},
+                   {'num_capsule': 16, 'routings': 6}]
 
-    model_name_base = 'TransformerRNN'
+    model_name_base = 'CapsuleRNN'
 
     for spec_id, spec in enumerate(model_specs):
-        model_name = model_name_base + f'_specId={spec_id}_numhead={spec["num_head"]}_kdim={spec["k_dim"]}'
-        model_name += f'_addposition={spec["add_position"]}_innerdim={spec["inner_dim"]}'
+        model_name = model_name_base + f'_specId={spec_id}_numcapsule={spec["num_capsule"]}_routings={spec["routings"]}'
 
         skf = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
         oof_preds_optimized = np.zeros(seq_train.shape[0])
@@ -86,26 +86,17 @@ def main(logger, args):
         results = []
         for fold, (index_train, index_valid) in enumerate(skf.split(label_train, label_train)):
             logger.info(f'Fold {fold + 1} / {KFOLD} - create dataloader and build model')
-            x_train = {
-                'sequence': seq_train[index_train].astype(int),
-                'position': pos_train[index_train].astype(int)
-            }
-            x_valid = {
-                'sequence': seq_train[index_valid].astype(int),
-                'position': pos_train[index_valid].astype(int)
-            }
+            x_train = seq_train[index_train].astype(int)
+            x_valid = seq_train[index_valid].astype(int)
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
-            model = TransformerRNN(embedding_matrix, PADDING_LENGTH, hidden_dim=64, out_hidden_dim=64, out_drop=0.3,
-                                   embed_drop=0.2, num_head=spec['num_head'], k_dim=spec['k_dim'], trans_drop=0.2,
-                                   add_position=spec['add_position'], inner_dim=spec['inner_dim'])
+            model = CapsuleRNN(embedding_matrix, PADDING_LENGTH, hidden_dim=64, out_hidden_dim=64, out_drop=0.3,
+                               embed_drop=0.2, num_capsule=spec['num_capsule'], dim_capsule=spec['num_capsule'],
+                               routings=spec['routings'])
 
-            if args['debug']:
-                step_size = 100
-                scheduler_trigger_steps = 300
-            else:
-                step_size = 1200
-                scheduler_trigger_steps = 4000
+            steps_per_epoch = x_train.shape[0] // batch_size
+            scheduler_trigger_steps = steps_per_epoch * trigger
+            step_size = steps_per_epoch * (epochs - trigger) // NUM_SNAPSHOTS
 
             config = {
                 'epochs': epochs,

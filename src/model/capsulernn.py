@@ -9,7 +9,7 @@ from .transformer import get_non_pad_mask
 
 
 class CapsuleRNN(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, hidden_dim=64, out_hidden_dim=64, out_drop=0.3, embed_drop=0.2,
+    def __init__(self, embedding_matrix, seq_length, hidden_dim=64, out_hidden_dim=64, out_drop=0.3, embed_drop=0.2,
                  num_capsule=16, dim_capsule=16, routings=4):
         super(CapsuleRNN, self).__init__()
 
@@ -20,8 +20,8 @@ class CapsuleRNN(nn.Module):
         self.gru = nn.GRU(hidden_dim * 2, hidden_dim, bidirectional=True, batch_first=True)
         self.capsule = CapsuleUnit(hidden_dim * 2, num_capsule=num_capsule, dim_capsule=dim_capsule, routings=routings)
         self.capsule_fc = Dense(num_capsule * dim_capsule, hidden_dim * 2, dropout=0.2, activation='relu')
-        self.lstm_attention = Attention(hidden_dim * 2, seq_len)
-        self.gru_attention = Attention(hidden_dim * 2, seq_len)
+        self.lstm_attention = Attention(hidden_dim * 2, seq_length)
+        self.gru_attention = Attention(hidden_dim * 2, seq_length)
 
         fm_first_size = hidden_dim * 2 * 5
         fm_second_size = hidden_dim * 2 * sp.special.comb(5, 2)
