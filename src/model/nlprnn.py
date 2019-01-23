@@ -9,7 +9,7 @@ from .common import Attention, Dense
 class NLPFeaturesRNN(nn.Module):
     def __init__(self, input_shapes, embedding_matrix, seq_len, hidden_size=64, out_hidden_dim=64,
                  nlp_hidden_dim=64, nlp_dropout=0.2, embed_drop=0.2, out_drop=0.3, mask=False,
-                 num_dense_layers=1, dense_activate='relu', embed_dropout_direction=0, factorize=False):
+                 num_dense_layers=1, dense_activate='relu', embed_drop_direction=0, factorize=False):
         super(NLPFeaturesRNN, self).__init__()
 
         self.mask = mask
@@ -36,7 +36,7 @@ class NLPFeaturesRNN(nn.Module):
         self.embedding.weight.requires_grad = False
 
         self.embedding_dropout = nn.Dropout2d(embed_drop)
-        self.embed_dropout_direction = embed_dropout_direction
+        self.embed_drop_direction = embed_drop_direction
 
         self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, bidirectional=True, batch_first=True)
         self.gru = nn.GRU(hidden_size * 2, hidden_size, bidirectional=True, batch_first=True)

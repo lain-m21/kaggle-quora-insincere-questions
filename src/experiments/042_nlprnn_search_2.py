@@ -115,7 +115,7 @@ def main(logger, args):
             model = NLPFeaturesRNN({'continuous': len(x_continuous)}, embedding_matrix, PADDING_LENGTH,
                                    hidden_size=64, out_hidden_dim=64, out_drop=0.3, embed_drop=0.2,
                                    dense_activate=spec['activate'], nlp_hidden_dim=spec['nlp_dim'], mask=False,
-                                   nlp_dropout=spec['nlp_dropout'], factorize=spec['factorize'], embed_dropout_direction=0)
+                                   nlp_dropout=spec['nlp_dropout'], factorize=spec['factorize'], embed_drop_direction=0)
 
             steps_per_epoch = len(df_train) // batch_size
             scheduler_trigger_steps = steps_per_epoch * trigger
