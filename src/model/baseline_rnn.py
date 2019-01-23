@@ -8,7 +8,7 @@ from .common import Attention
 
 class StackedRNNFM(nn.Module):
     def __init__(self, embedding_matrix, seq_len, hidden_size=64, out_hidden_dim=32,
-                 embed_drop=0.1, recurrent_drop=0.0, out_drop=0.2):
+                 embed_drop=0.1, recurrent_drop=0.0, out_drop=0.2, embed_drop_direction=0):
         super(StackedRNNFM, self).__init__()
 
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
@@ -16,6 +16,7 @@ class StackedRNNFM(nn.Module):
         self.embedding.weight.requires_grad = False
 
         self.embedding_dropout = nn.Dropout2d(embed_drop)
+        self.embed_drop_direction = embed_drop_direction
 
         self.lstm = nn.LSTM(embedding_matrix.shape[1], hidden_size, dropout=recurrent_drop,
                             bidirectional=True, batch_first=True)
@@ -35,8 +36,11 @@ class StackedRNNFM(nn.Module):
 
     def forward(self, inputs):
         x_embedding = self.embedding(inputs)  # B x L x D
-        x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
-        x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
+        if self.embed_drop_direction == 0:
+            x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
+            x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
+        else:
+            x_embedding = self.embedding_dropout(x_embedding)
 
         x_lstm, _ = self.lstm(x_embedding)
         x_gru, _ = self.gru(x_lstm)
