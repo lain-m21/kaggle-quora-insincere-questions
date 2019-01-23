@@ -68,11 +68,11 @@ def main(logger, args):
 
     logger.info('Start training and evaluation loop')
 
-    model_specs = [{'num_head': 2, 'k_dim': 64, 'num_layers': 1, 'dropout': 0.3},
-                   {'num_head': 4, 'k_dim': 64, 'num_layers': 1, 'dropout': 0.3},
-                   {'num_head': 8, 'k_dim': 64, 'num_layers': 1, 'dropout': 0.3},
-                   {'num_head': 2, 'k_dim': 128, 'num_layers': 1, 'dropout': 0.3},
-                   {'num_head': 4, 'k_dim': 128, 'num_layers': 1, 'dropout': 0.3}]
+    model_specs = [{'num_head': 8, 'k_dim': 16, 'num_layers': 1, 'dropout': 0.3},
+                   {'num_head': 8, 'k_dim': 32, 'num_layers': 1, 'dropout': 0.3},
+                   {'num_head': 16, 'k_dim': 8, 'num_layers': 1, 'dropout': 0.3},
+                   {'num_head': 16, 'k_dim': 16, 'num_layers': 1, 'dropout': 0.3},
+                   {'num_head': 8, 'k_dim': 16, 'num_layers': 2, 'dropout': 0.3}]
 
     model_name_base = 'Transformer'
 
