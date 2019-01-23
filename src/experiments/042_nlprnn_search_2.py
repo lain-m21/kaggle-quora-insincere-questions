@@ -117,7 +117,7 @@ def main(logger, args):
                                    dense_activate=spec['activate'], nlp_hidden_dim=spec['nlp_dim'], mask=False,
                                    nlp_dropout=spec['nlp_dropout'], factorize=spec['factorize'], embed_drop_direction=0)
 
-            steps_per_epoch = len(df_train) // batch_size
+            steps_per_epoch = seq_train[index_train].shape[0] // batch_size
             scheduler_trigger_steps = steps_per_epoch * trigger
             step_size = steps_per_epoch * (epochs - trigger) // NUM_SNAPSHOTS
 
