@@ -47,7 +47,7 @@ class TransformerRNN(nn.Module):
         x_embed = self.word_embedding(seq)
         x_pos = self.position_embedding(pos)
 
-        x_trans = self.transformer(x_embed + x_pos, non_pad_mask, attention_mask)
+        x_trans, _ = self.transformer(x_embed + x_pos, non_pad_mask, attention_mask)
 
         x_embed_rnn = self.embedding_dropout(torch.unsqueeze(x_embed, 0).transpose(1, 3))
         x_embed_rnn = torch.squeeze(x_embed_rnn.transpose(1, 3))
