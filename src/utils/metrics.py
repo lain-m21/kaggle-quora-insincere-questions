@@ -179,4 +179,9 @@ def calculate_total_metrics(results_list):
         'opt_threshold_avg': opt_threshold_avg,
         'reopt_threshold_avg': reopt_threshold_avg
     }
+
+    for i, th in enumerate(mv_thresholds_avg):
+        name = f'mv_threshold_avg_snapshot_{i}'
+        results[name] = th
+
     return results

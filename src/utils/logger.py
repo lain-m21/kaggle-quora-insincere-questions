@@ -6,10 +6,8 @@ import traceback
 from typing import Union
 from pathlib import Path, PosixPath
 from contextlib import contextmanager
-from datetime import datetime
 import numpy as np
 import pandas as pd
-from sklearn.metrics import precision_score, recall_score, f1_score
 
 from logging import getLogger
 from logging import StreamHandler
@@ -164,7 +162,6 @@ SCHEMA_MAP = {
 
 
 def post_to_total_metrics_table(data, project_id, dataset_name):
-
     columns = [
         'date', 'script_name', 'spec_id', 'model_name', 'mv_f1_avg', 'mv_f1_std', 'mv_precision_avg', 'mv_recall_avg',
         'opt_f1_avg', 'opt_f1_std', 'opt_precision_avg', 'opt_recall_avg', 'reopt_f1_avg', 'reopt_f1_std',
@@ -183,7 +180,6 @@ def post_to_total_metrics_table(data, project_id, dataset_name):
 
 
 def post_to_fold_metrics_table(data, project_id, dataset_name):
-
     columns = [
         'date', 'script_name', 'spec_id', 'model_name', 'fold_id', 'oof_mv_f1', 'oof_mv_precision', 'oof_mv_recall',
         'oof_opt_f1', 'oof_opt_precision', 'oof_opt_recall', 'oof_reopt_f1', 'oof_reopt_precision', 'oof_reopt_recall',
