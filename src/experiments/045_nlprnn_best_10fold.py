@@ -216,10 +216,12 @@ def main(logger, args):
         message += f'Re-optimized - F1: avg = {results["reopt_f1_avg"]}, std = {results["reopt_f1_std"]}, '
         message += f'Precision: {results["reopt_precision_avg"]}, Recall: {results["reopt_recall_avg"]}\n'
 
+        mv_thresholds = ",".join([str(th) for th in results["mv_thresholds_avg"]])
+
         message += f'Focal Loss: {results["focal_loss_avg"]}, '
         message += f'Optimized Threshold: {results["opt_threshold_avg"]}, '
         message += f'Re-optimized Threshold: {results["reopt_threshold_avg"]}\n'
-        message += f'Majority Voting Thresholds: {",".join(results["mv_thresholds_avg"])}'
+        message += f'Majority Voting Thresholds: {mv_thresholds}'
         logger.post(message)
 
 
