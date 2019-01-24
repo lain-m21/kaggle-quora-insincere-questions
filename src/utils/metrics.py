@@ -46,8 +46,8 @@ def focal_loss(outputs, targets, gamma=2.0, alpha=0.75, factor=100, epsilon=1e-1
 
 
 def threshold_search(y_true, y_pred, search_range=(0.2, 0.8), search_num=61):
-    best_threshold = 0
-    best_score = 0
+    best_threshold = 0.0
+    best_score = 0.0
     for threshold in tqdm([th for th in np.linspace(*search_range, search_num)]):
         score = f1_score(y_true, y_pred > threshold)
         if score > best_score:
