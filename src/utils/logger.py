@@ -6,6 +6,7 @@ import traceback
 from typing import Union
 from pathlib import Path, PosixPath
 from contextlib import contextmanager
+from datetime import datetime
 import numpy as np
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -18,8 +19,6 @@ from logging import FileHandler
 
 import torch.nn as nn
 from tensorboardX import SummaryWriter
-
-from .metrics import focal_loss
 
 
 class Logger:
@@ -157,6 +156,13 @@ def post_to_snapshot_spreadsheet(logger: Logger,
     logger.post_to_spreadsheet(data, url)
 
 
+SCHEMA_MAP = {
+    str: 'STRING',
+    float: 'FLOAT',
+    int: 'INTEGER'
+}
+
+
 def post_to_total_metrics_table(data, project_id, dataset_name):
 
     columns = [
@@ -169,8 +175,11 @@ def post_to_total_metrics_table(data, project_id, dataset_name):
 
     insert_data = dict([(col, [data[col]]) for col in columns])
     df = pd.DataFrame.from_dict(insert_data)
+
+    schema = get_schema(df, columns)
+
     table_name = dataset_name + '.' + 'total_metrics'
-    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
+    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append', table_schema=schema)
 
 
 def post_to_fold_metrics_table(data, project_id, dataset_name):
@@ -183,8 +192,11 @@ def post_to_fold_metrics_table(data, project_id, dataset_name):
 
     insert_data = dict([(col, [data[col]]) for col in columns])
     df = pd.DataFrame.from_dict(insert_data)
+
+    schema = get_schema(df, columns)
+
     table_name = dataset_name + '.' + 'fold_metrics'
-    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
+    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append', table_schema=schema)
 
 
 def post_to_snapshot_metrics_table(data, project_id, dataset_name):
@@ -196,7 +208,19 @@ def post_to_snapshot_metrics_table(data, project_id, dataset_name):
 
     insert_data = dict([(col, [data[col]]) for col in columns])
     df = pd.DataFrame.from_dict(insert_data)
-    import IPython
-    IPython.embed()
+
+    schema = get_schema(df, columns)
+
     table_name = dataset_name + '.' + 'snapshot_metrics'
-    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
+    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append', table_schema=schema)
+
+
+def get_schema(df, columns):
+    schema = []
+    for col in columns:
+        if col == 'date':
+            schema.append({'name': 'date', 'type': 'DATETIME'})
+            continue
+        if type(df[col].item()) in SCHEMA_MAP:
+            schema.append({'name': col, 'type': SCHEMA_MAP[type(df[col].item())]})
+    return schema
