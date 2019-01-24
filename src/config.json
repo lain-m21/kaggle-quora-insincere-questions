@@ -2,5 +2,7 @@
   "competition": "quora-insincere-questions-classification",
   "slack": "https://hooks.slack.com/services/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",
   "spreadsheet_main": "https://script.google.com/macros/s/AKfycbzuRnsy5dMfNllYuGyM_wZjHf3m_Uv5ICsWs397kvIGUN5L1yw/exec",
-  "spreadsheet_snapshots": "https://script.google.com/macros/s/AKfycbzDFZiNMemanbY2eMDJIxvhrRgjPXpsG_0waNZvtqxsnYN1KGIo/exec"
+  "spreadsheet_snapshots": "https://script.google.com/macros/s/AKfycbzDFZiNMemanbY2eMDJIxvhrRgjPXpsG_0waNZvtqxsnYN1KGIo/exec",
+  "bq_project_id": "kouzoh-p-lain21",
+  "bq_dateset": "kaggle_quora_insincere_questions"
 }
