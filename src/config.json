@@ -4,5 +4,5 @@
   "spreadsheet_main": "https://script.google.com/macros/s/AKfycbzuRnsy5dMfNllYuGyM_wZjHf3m_Uv5ICsWs397kvIGUN5L1yw/exec",
   "spreadsheet_snapshots": "https://script.google.com/macros/s/AKfycbzDFZiNMemanbY2eMDJIxvhrRgjPXpsG_0waNZvtqxsnYN1KGIo/exec",
   "bq_project_id": "kouzoh-p-lain21",
-  "bq_dateset": "kaggle_quora_insincere_questions"
+  "bq_dataset": "kaggle_quora_insincere_questions"
 }
