@@ -207,19 +207,19 @@ def main(logger, args):
         post_to_total_metrics_table(results, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
 
         message = 'KFold training and evaluation has been done.\n'
-        message += f'Majority Voting - F1: avg = {fold_results["mv_f1_avg"]}, std = {fold_results["mv_f1_std"]}, '
-        message += f'Precision: {fold_results["mv_precision_avg"]}, Recall: {fold_results["mv_recall_avg"]}\n'
+        message += f'Majority Voting - F1: avg = {results["mv_f1_avg"]}, std = {results["mv_f1_std"]}, '
+        message += f'Precision: {results["mv_precision_avg"]}, Recall: {results["mv_recall_avg"]}\n'
 
-        message += f'Optimized - F1: avg = {fold_results["opt_f1_avg"]}, std = {fold_results["opt_f1_std"]}, '
-        message += f'Precision: {fold_results["opt_precision_avg"]}, Recall: {fold_results["opt_recall_avg"]}\n'
+        message += f'Optimized - F1: avg = {results["opt_f1_avg"]}, std = {results["opt_f1_std"]}, '
+        message += f'Precision: {results["opt_precision_avg"]}, Recall: {results["opt_recall_avg"]}\n'
 
-        message += f'Re-optimized - F1: avg = {fold_results["reopt_f1_avg"]}, std = {fold_results["reopt_f1_std"]}, '
-        message += f'Precision: {fold_results["reopt_precision_avg"]}, Recall: {fold_results["reopt_recall_avg"]}\n'
+        message += f'Re-optimized - F1: avg = {results["reopt_f1_avg"]}, std = {results["reopt_f1_std"]}, '
+        message += f'Precision: {results["reopt_precision_avg"]}, Recall: {results["reopt_recall_avg"]}\n'
 
-        message += f'Focal Loss: {fold_results["focal_loss_avg"]}, '
-        message += f'Optimized Threshold: {fold_results["opt_threshold_avg"]}, '
-        message += f'Re-optimized Threshold: {fold_results["reopt_threshold_avg"]}\n'
-        message += f'Majority Voting Thresholds: {",".join(fold_results["mv_thresholds_avg"])}'
+        message += f'Focal Loss: {results["focal_loss_avg"]}, '
+        message += f'Optimized Threshold: {results["opt_threshold_avg"]}, '
+        message += f'Re-optimized Threshold: {results["reopt_threshold_avg"]}\n'
+        message += f'Majority Voting Thresholds: {",".join(results["mv_thresholds_avg"])}'
         logger.post(message)
 
 
