@@ -32,10 +32,10 @@ SCRIPT_NAME = Path(__file__).stem
 
 SEED = 42
 PADDING_LENGTH = 10
-EPOCHS = 5
+EPOCHS = 3
 TRIGGER = 1
 NUM_SNAPSHOTS = 5
-KFOLD = 10
+KFOLD = 3
 
 
 def main(logger, args):
