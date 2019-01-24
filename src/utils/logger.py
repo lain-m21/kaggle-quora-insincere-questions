@@ -196,7 +196,5 @@ def post_to_snapshot_metrics_table(data, project_id, dataset_name):
 
     insert_data = dict([(col, [data[col]]) for col in columns])
     df = pd.DataFrame.from_dict(insert_data)
-    import IPython
-    IPython.embed()
     table_name = dataset_name + '.' + 'snapshot_metrics'
     df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
