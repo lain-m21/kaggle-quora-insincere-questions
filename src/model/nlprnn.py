@@ -73,7 +73,7 @@ class NLPFeaturesRNN(nn.Module):
         x_gru, _ = self.gru(x_lstm)
 
         if self.mask:
-            mask = get_non_pad_mask(inputs['sequence'])
+            mask = get_non_pad_mask(inputs['text'])
             x_lstm_attention = self.lstm_attention(x_lstm, mask.squeeze(-1))
             x_gru_attention = self.gru_attention(x_gru, mask.squeeze(-1))
             x_avg_pool = torch.mean(x_gru * mask, 1)
