@@ -7,6 +7,8 @@ from typing import Union
 from pathlib import Path, PosixPath
 from contextlib import contextmanager
 import numpy as np
+import pandas as pd
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 from logging import getLogger
 from logging import StreamHandler
@@ -16,6 +18,8 @@ from logging import FileHandler
 
 import torch.nn as nn
 from tensorboardX import SummaryWriter
+
+from .metrics import focal_loss
 
 
 class Logger:
@@ -151,3 +155,46 @@ def post_to_snapshot_spreadsheet(logger: Logger,
     data = [eval_type, tag, script_name, model_name, fold]
     data.extend(snapshot_info)
     logger.post_to_spreadsheet(data, url)
+
+
+def post_to_total_metrics_table(data, project_id, dataset_name):
+
+    columns = [
+        'date', 'script_name', 'spec_id', 'model_name', 'mv_f1_avg', 'mv_f1_std', 'mv_precision_avg', 'mv_recall_avg',
+        'opt_f1_avg', 'opt_f1_std', 'opt_precision_avg', 'opt_recall_avg', 'reopt_f1_avg', 'reopt_f1_std',
+        'reopt_precision_avg', 'reopt_recall_avg', 'focal_loss_avg', 'mv_threshold_avg_snapshot_0',
+        'mv_threshold_avg_snapshot_1', 'mv_threshold_avg_snapshot_2', 'mv_threshold_avg_snapshot_3',
+        'mv_threshold_avg_snapshot_4', 'opt_threshold_avg', 'reopt_threshold_avg'
+    ]
+
+    insert_data = dict([(col, [data[col]]) for col in columns])
+    df = pd.DataFrame.from_dict(insert_data)
+    table_name = dataset_name + '.' + 'total_metrics'
+    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
+
+
+def post_to_fold_metrics_table(data, project_id, dataset_name):
+
+    columns = [
+        'date', 'script_name', 'spec_id', 'model_name', 'fold_id', 'oof_mv_f1', 'oof_mv_precision', 'oof_mv_recall',
+        'oof_opt_f1', 'oof_opt_precision', 'oof_opt_recall', 'oof_reopt_f1', 'oof_reopt_precision', 'oof_reopt_recall',
+        'oof_focal_loss', 'oof_opt_threshold', 'oof_reopt_threshold'
+    ]
+
+    insert_data = dict([(col, [data[col]]) for col in columns])
+    df = pd.DataFrame.from_dict(insert_data)
+    table_name = dataset_name + '.' + 'fold_metrics'
+    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
+
+
+def post_to_snapshot_metrics_table(data, project_id, dataset_name):
+    columns = [
+        'date', 'script_name', 'spec_id', 'model_name', 'fold_id', 'snapshot_id',
+        'snapshot_f1', 'snapshot_precision', 'snapshot_recall', 'snapshot_focal_loss', 'snapshot_threshold',
+        'snapshot_epoch', 'snapshot_steps', 'snapshot_loss'
+    ]
+
+    insert_data = dict([(col, [data[col]]) for col in columns])
+    df = pd.DataFrame.from_dict(insert_data)
+    table_name = dataset_name + '.' + 'snapshot_metrics'
+    df.to_gbq(destination_table=table_name, project_id=project_id, if_exists='append')
