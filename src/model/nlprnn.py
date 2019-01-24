@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 
 from .common import Attention, Dense
+from .transformer import get_non_pad_mask
 
 
 class NLPFeaturesRNN(nn.Module):
@@ -72,10 +73,11 @@ class NLPFeaturesRNN(nn.Module):
         x_gru, _ = self.gru(x_lstm)
 
         if self.mask:
-            x_lstm_attention = self.lstm_attention(x_lstm, inputs['mask'])
-            x_gru_attention = self.gru_attention(x_gru, inputs['mask'])
-            x_avg_pool = torch.mean(x_gru * inputs['mask'].unsqueeze(-1), 1)
-            x_max_pool, _ = torch.max(x_gru * inputs['mask'].unsqueeze(-1), 1)
+            mask = get_non_pad_mask(inputs['sequence'])
+            x_lstm_attention = self.lstm_attention(x_lstm, mask.squeeze(-1))
+            x_gru_attention = self.gru_attention(x_gru, mask.squeeze(-1))
+            x_avg_pool = torch.mean(x_gru * mask, 1)
+            x_max_pool, _ = torch.max(x_gru * mask, 1)
         else:
             x_lstm_attention = self.lstm_attention(x_lstm)
             x_gru_attention = self.gru_attention(x_gru)
