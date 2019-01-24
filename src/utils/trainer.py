@@ -4,13 +4,14 @@ import datetime
 from tqdm import tqdm
 import numpy as np
 import scipy as sp
+from sklearn.metrics import precision_score, recall_score
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from .loaders import SimpleDataset, DictDataset, BinaryOverSampler, BinaryBalancedSampler, worker_init_fn
-from .metrics import f1_from_logits_with_threshold
+from .metrics import calculate_snapshot_metrics
 from .loss import SmoothF1Loss, FocalLoss
 
 
@@ -139,17 +140,21 @@ class Trainer:
                         checkpoint_flag = self.scheduler.batch_step()
                         if checkpoint_flag:
                             self.logger.info('Cyclic scheduler hit the bottom. Start evaluation.')
-                            eval_result = self.evaluate(valid_loader)
-                            eval_result['epoch'] = epoch
-                            eval_result['steps'] = step_count
-                            eval_result['fold'] = fold_idx
-                            eval_results.append(eval_result)
+                            results = self.evaluate(valid_loader)
+                            results['snapshot_epoch'] = epoch
+                            results['snapshot_steps'] = step_count
+                            results['fold_id'] = fold_idx
+                            results['snapshot_id'] = checkpoint_count
+                            eval_results.append(results)
 
                             elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
-                            message = f'Fold: {fold_idx}, Epoch: {epoch + 1} / {self.epochs}, Steps: {step_count} / {n_iter}, '
-                            message += f'Checkpoint: {checkpoint_count}, Train Loss: {loss_epoch}, '
-                            message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
-                            message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
+                            message = f'Fold: {fold_idx + 1}, Epoch: {epoch + 1} / {self.epochs}, '
+                            message += f'Steps: {step_count} / {n_iter}, Checkpoint: {checkpoint_count}, '
+                            message += f'Train Loss: {loss_epoch}, Eval Loss: {results["snapshot_loss"]}, '
+                            message += f'F1: {results["snapshot_f1"]}, Precision: {results["snapshot_precision"]}, '
+                            message += f'Recall: {results["snapshot_recall"]}, '
+                            message += f'Focal Loss: {results["snapshot_focal_loss"]}, '
+                            message += f'Best threshold: {results["snapshot_threshold"]}, Elapsed: {elapsed} sec'
                             self.logger.info(message)
 
                             checkpoint_count += 1
@@ -162,15 +167,15 @@ class Trainer:
 
             if self.scheduler_type == 'step':
                 self.scheduler.step()
-                eval_result = self.evaluate(valid_loader)
-                eval_result['epoch'] = epoch
-                eval_result['fold'] = fold_idx
-                eval_results.append(eval_result)
+                results = self.evaluate(valid_loader)
+                results['epoch'] = epoch
+                results['fold'] = fold_idx
+                eval_results.append(results)
 
                 elapsed = str(datetime.timedelta(seconds=time.time() - start_time))
                 message = f'Fold: {fold_idx}, Epoch: {epoch + 1} / {self.epochs}, Train Loss: {loss_epoch}, '
-                message += f'Eval Loss: {eval_result["loss"]}, F1: {eval_result["f1"]}, '
-                message += f'Best threshold: {eval_result["best_threshold"]}, Elapsed: {elapsed} sec'
+                message += f'Eval Loss: {results["loss"]}, F1: {results["f1"]}, '
+                message += f'Best threshold: {results["best_threshold"]}, Elapsed: {elapsed} sec'
                 self.logger.info(message)
 
         return eval_results
@@ -257,18 +262,13 @@ class Trainer:
 
                 progress_bar.update(1)
 
-        total_outputs = np.concatenate(total_outputs, axis=0)
-        total_targets = np.concatenate(total_targets, axis=0)
-        threshold_search_result = f1_from_logits_with_threshold(total_outputs, total_targets)
-        preds = sp.special.expit(total_outputs)
-        eval_result = {
-            'preds_proba': preds.reshape(-1,),
-            'preds_binary': np.array(preds > threshold_search_result['threshold'], dtype=int).reshape(-1,),
-            'best_threshold': threshold_search_result['threshold'],
-            'f1': threshold_search_result['f1'],
-            'loss': loss_eval
-        }
-        return eval_result
+        total_outputs = np.concatenate(total_outputs, axis=0).reshape(-1,)
+        total_targets = np.concatenate(total_targets, axis=0).reshape(-1,).astype(int)
+
+        results = calculate_snapshot_metrics(total_outputs, total_targets)
+        results['snapshot_loss'] = loss_eval
+
+        return results
 
     def predict(self, test_loader, threshold):
         total_outputs = []
