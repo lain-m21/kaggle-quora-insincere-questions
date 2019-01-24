@@ -105,7 +105,7 @@ def main(logger, args):
 
         embed_type = joint.join([embed_type_map[t] for t in spec['type']])
 
-        model_name = model_name_base + f'_specId={spec_id}_embedtype={embed_type}_embeddrop={spec["embed_dropout"]}'
+        model_name = model_name_base + f'_specId={spec_id}_embedtype={embed_type}_embeddrop={spec["embed_drop"]}'
 
         skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=SEED)
         oof_mv_preds = np.zeros(len(seq_train))
@@ -126,7 +126,7 @@ def main(logger, args):
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             model = NLPFeaturesRNN({'continuous': len(x_continuous)}, embedding_matrix, PADDING_LENGTH,
-                                   hidden_size=64, out_hidden_dim=64, out_drop=0.3, embed_drop=0.1,
+                                   hidden_size=64, out_hidden_dim=64, out_drop=0.3, embed_drop=spec['embed_drop'],
                                    dense_activate='relu', nlp_hidden_dim=16, mask=True,
                                    nlp_dropout=0.2, factorize=False,
                                    num_dense_layers=2)
