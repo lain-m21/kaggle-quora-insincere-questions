@@ -319,7 +319,7 @@ class Trainer:
                                         worker_init_fn=worker_init_fn)
         else:
             dataloader = DataLoader(dataset,
-                                    batch_size=self.batch_size * 2,
+                                    batch_size=self.batch_size * 6,
                                     pin_memory=True)
 
         return dataloader
