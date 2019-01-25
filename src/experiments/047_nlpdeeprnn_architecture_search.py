@@ -55,23 +55,26 @@ def main(logger, args):
 
     embed_types = [0, 1, 2]
 
-    output_queue = mp.Queue()
+    def parallel_apply(func_and_args):
+        func, func_args = func_and_args
+        return func(*func_args)
 
-    def parallel_apply(func_id, func, func_args, output_queue):
-        output_queue.put((func_id, func(*func_args)))
-
-    func_list = [extract_nlp_features, load_multiple_embeddings]
+    if args['debug']:
+        func_list = [
+            extract_nlp_features,
+            lambda x, y: [np.random.rand(len(tokenizer.word_index) + 1, 300) for _ in range(2)]
+        ]
+    else:
+        func_list = [extract_nlp_features, load_multiple_embeddings]
     func_args_list = [(df_train, ), (tokenizer.word_index, embed_types)]
 
     logger.info('Start multiprocess nlp feature extraction and embedding matrices loading')
-    processes = [mp.Process(target=parallel_apply, args=(func_id, func, func_args, output_queue))
-                 for func_id, (func, func_args) in enumerate(zip(func_list, func_args_list))]
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+    with mp.Pool(processes=2) as p:
+        results = p.map(parallel_apply, [
+            (extract_nlp_features, (df_train,)),
+            (load_multiple_embeddings, (tokenizer.word_index, embed_types))
+        ])
 
-    results = sorted([output_queue.get() for _ in processes])
     df_train_extracted = results[0][1]
     embedding_matrices = results[1][1]
     embedding_matrix = np.array(embedding_matrices).mean(0)
