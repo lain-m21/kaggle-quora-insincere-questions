@@ -7,6 +7,130 @@ from .common import Attention, Dense
 from .transformer import get_non_pad_mask
 
 
+class NLPFeaturesDeepRNN(nn.Module):
+    def __init__(self, embedding_matrix, seq_len, nlp_size, embed_drop=0.2, mask=False,
+                 nlp_layer_types=({'activation': 'relu', 'dim': 16, 'dropout': 0.2},
+                                  {'activation': 'relu', 'dim': 16, 'dropout': 0.2}),
+                 rnn_layer_types=({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
+                                  {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
+                 upper_layer_types=({'dim': 64, 'dropout': 0.3},)):
+        super(NLPFeaturesDeepRNN, self).__init__()
+
+        self.mask = mask
+        self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
+        self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
+        self.embedding.weight.requires_grad = False
+        self.embedding_dropout = nn.Dropout2d(embed_drop)
+
+        nlp_layers = []
+        for i, layer_type in enumerate(nlp_layer_types):
+            if i == 0:
+                input_dim = 1
+            else:
+                input_dim = nlp_layer_types[i - 1]['dim']
+            hidden_dim = layer_type['dim']
+            dropout = layer_type['dropout']
+            activation = layer_type['activation']
+            nlp_layers.append(nn.ModuleList([
+                Dense(input_dim, hidden_dim, dropout=dropout, activation=activation)
+                for _ in range(nlp_size)
+            ]))
+
+        self.nlp_layers = nn.ModuleList(nlp_layers)
+        nlp_out_dim = nlp_layer_types[-1]['dim'] * nlp_size
+
+        rnn_layers = []
+        for i, layer_type in enumerate(rnn_layer_types):
+            if i == 0:
+                input_dim = embedding_matrix.shape[1]
+            else:
+                input_dim = rnn_layer_types[i - 1]['dim'] * 2
+            hidden_dim = layer_type['dim']
+            num_layers = layer_type['num_layers']
+            recurrent_drop = layer_type['dropout']
+            if layer_type['type'] == 'lstm':
+                rnn_layers.append(nn.LSTM(input_dim, hidden_dim, bidirectional=True, batch_first=True,
+                                          dropout=recurrent_drop, num_layers=num_layers))
+            else:
+                rnn_layers.append(nn.GRU(input_dim, hidden_dim, bidirectional=True, batch_first=True,
+                                         dropout=recurrent_drop, num_layers=num_layers))
+
+        self.rnn_layers = nn.ModuleList(rnn_layers)
+        rnn_out_dim = rnn_layer_types[-1]['dim'] * 2
+
+        attention_layers = []
+        for layer_type in range(len(rnn_layer_types)):
+            dim = layer_type['dim'] * 2
+            attention_layers.append(Attention(dim, seq_len))
+
+        self.attention_layers = nn.ModuleList(attention_layers)
+
+        first_order_rnn_dim = sum([layer_type['dim'] * 2 for layer_type in rnn_layer_types])
+        second_order_rnn_dim = rnn_out_dim * sp.special.comb(3, 2)
+
+        upper_layers = []
+        for i, layer_type in enumerate(upper_layer_types):
+            if i == 0:
+                input_dim = first_order_rnn_dim + second_order_rnn_dim + nlp_out_dim
+            else:
+                input_dim = upper_layer_types[i - 1]['dim']
+            hidden_dim = layer_type['dim']
+            dropout = layer_type['dropout']
+            upper_layers.append(Dense(input_dim, hidden_dim, dropout, activation='relu'))
+
+        self.upper_layers = nn.ModuleList(upper_layers)
+
+        upper_out_dim = upper_layer_types[-1]['dim']
+        self.output_layer = nn.Linear(upper_out_dim, 1)
+
+    def forward(self, inputs):
+        x_embedding = self.embedding(inputs['text'])  # B x L x D
+        if self.embed_drop_direction == 0:
+            x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
+            x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
+        else:
+            x_embedding = self.embedding_dropout(x_embedding)
+
+        x_mask = get_non_pad_mask(inputs)
+
+        x_nlp = inputs['nlp']
+        for i, layers in enumerate(self.nlp_layers):
+            x_nlp = [layer(x) for x, layer in zip(x_nlp, layers)]
+
+        x_rnn = []
+        x = x_embedding
+        for i, rnn_layer in enumerate(self.rnn_layers):
+            x, _ = rnn_layer(x)
+            x_rnn.append(x)
+
+        x_rnn_attention = []
+        for x, attention_layer in zip(x_rnn, self.attention_layers):
+            x_attention = attention_layer(x * x_mask)
+            x_rnn_attention.append(x_attention)
+
+        x_avg_pool = torch.mean(x_rnn[-1], 1)
+        x_max_pool, _ = torch.max(x_rnn[-1], 1)
+
+        x_first_order_rnn = [
+            x_rnn_attention[-1],
+            x_avg_pool,
+            x_max_pool
+        ]
+
+        x_second_order_rnn = []
+        for t_1, t_2 in itertools.combinations(x_first_order_rnn, 2):
+            x_second_order_rnn.append(t_1 * t_2)
+
+        x_first_order_rnn += x_rnn_attention[:-1]
+
+        x_upper = torch.cat(x_first_order_rnn + x_second_order_rnn + x_nlp, 1)
+        for i, upper_layer in enumerate(self.upper_layers):
+            x_upper = upper_layer(x_upper)
+
+        outputs = self.output_layer(x_upper)
+        return outputs
+
+
 class NLPFeaturesRNN(nn.Module):
     def __init__(self, input_shapes, embedding_matrix, seq_len, hidden_size=64, out_hidden_dim=64,
                  nlp_hidden_dim=64, nlp_dropout=0.2, embed_drop=0.2, out_drop=0.3, mask=False,
