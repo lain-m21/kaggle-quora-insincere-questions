@@ -828,13 +828,13 @@ def main(logger, args):
     with logger.timer('Data loading'):
         df_train, df_test = load_data(INPUT_DIR, logger)
     with logger.timer('Preprocess train data'):
-        df_train = preprocess_text(df_train)
+        texts_train = preprocess_text(df_train, return_df=False)
     with logger.timer('Preprocess test data'):
-        df_test = preprocess_text(df_test)
+        texts_test = preprocess_text(df_test, return_df=False)
     with logger.timer('Tokenize train data'):
-        seq_train, tokenizer = tokenize_texts(df_train['question_text'], logger, texts_another=df_test['question_text'])
+        seq_train, tokenizer = tokenize_texts(texts_train, logger, texts_another=texts_test)
     with logger.timer('Tokenize test data'):
-        seq_test, _ = tokenize_texts(df_test['question_text'], logger, tokenizer=tokenizer)
+        seq_test, _ = tokenize_texts(texts_test, logger, tokenizer=tokenizer)
     with logger.timer('Pad train text data'):
         seq_train = pad_sequences(seq_train, maxlen=PADDING_LENGTH)
     with logger.timer('Pad test text data'):
