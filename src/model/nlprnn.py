@@ -85,11 +85,8 @@ class NLPFeaturesDeepRNN(nn.Module):
 
     def forward(self, inputs):
         x_embedding = self.embedding(inputs['text'])  # B x L x D
-        if self.embed_drop_direction == 0:
-            x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
-            x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
-        else:
-            x_embedding = self.embedding_dropout(x_embedding)
+        x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
+        x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
         x_mask = get_non_pad_mask(inputs)
 
