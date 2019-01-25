@@ -71,7 +71,7 @@ class NLPFeaturesDeepRNN(nn.Module):
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
             if i == 0:
-                input_dim = first_order_rnn_dim + second_order_rnn_dim + nlp_out_dim
+                input_dim = int(first_order_rnn_dim + second_order_rnn_dim + nlp_out_dim)
             else:
                 input_dim = upper_layer_types[i - 1]['dim']
             hidden_dim = layer_type['dim']
