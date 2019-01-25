@@ -230,8 +230,6 @@ def main(logger, args):
             fold_results = calculate_fold_metrics(eval_results, label_train[index_valid].reshape(-1,))
             results_list.append(fold_results)
 
-            logger.post(f'Spec ID: {spec_id}\nModel Spec: {spec}')
-
             message = f'Fold {fold + 1} / {KFOLD} has been done.\n'
 
             message += f'Majority Voting - F1: {fold_results["oof_mv_f1"]}, '
@@ -284,6 +282,8 @@ def main(logger, args):
         }
         results.update(results_addition)
         post_to_total_metrics_table(results, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
+
+        logger.post(f'Spec ID: {spec_id}\nModel Spec: {spec}')
 
         message = 'KFold training and evaluation has been done.\n'
         message += f'Majority Voting - F1: avg = {results["mv_f1_avg"]}, std = {results["mv_f1_std"]}, '
