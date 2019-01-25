@@ -59,7 +59,7 @@ class NLPFeaturesDeepRNN(nn.Module):
         rnn_out_dim = rnn_layer_types[-1]['dim'] * 2
 
         attention_layers = []
-        for layer_type in range(len(rnn_layer_types)):
+        for layer_type in rnn_layer_types:
             dim = layer_type['dim'] * 2
             attention_layers.append(Attention(dim, seq_len))
 
