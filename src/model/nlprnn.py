@@ -88,7 +88,7 @@ class NLPFeaturesDeepRNN(nn.Module):
         x_embedding = self.embedding_dropout(torch.unsqueeze(x_embedding, 0).transpose(1, 3))
         x_embedding = torch.squeeze(x_embedding.transpose(1, 3))
 
-        x_mask = get_non_pad_mask(inputs)
+        x_mask = get_non_pad_mask(inputs['text'])
 
         x_nlp = inputs['nlp']
         for i, layers in enumerate(self.nlp_layers):
