@@ -39,6 +39,11 @@ NUM_SNAPSHOTS = 5
 KFOLD = 5
 
 
+def parallel_apply(func_and_args):
+    func, func_args = func_and_args
+    return func(*func_args)
+
+
 def main(logger, args):
     df_train, _ = load_data(INPUT_DIR, logger)
     if args['debug']:
@@ -54,10 +59,6 @@ def main(logger, args):
     label_train = df_train['target'].values.reshape(-1, 1)
 
     embed_types = [0, 1, 2]
-
-    def parallel_apply(func_and_args):
-        func, func_args = func_and_args
-        return func(*func_args)
 
     if args['debug']:
         func_list = [
