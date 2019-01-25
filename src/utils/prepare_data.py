@@ -98,10 +98,13 @@ def load_embeddings(embed_type, word_index):
     return embedding_matrix
 
 
-def load_multiple_embeddings(word_index, embed_types=(0, 1, 2)):
+def load_multiple_embeddings(word_index, embed_types=(0, 1, 2), debug=False):
     results = []
     for t in embed_types:
-        results.append(load_embeddings(t, word_index))
+        if debug:
+            results.append(np.random.rand(len(word_index) + 1, 300))
+        else:
+            results.append(load_embeddings(t, word_index))
     return results
 
 

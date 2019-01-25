@@ -60,24 +60,15 @@ def main(logger, args):
 
     embed_types = [0, 1, 2]
 
-    if args['debug']:
-        func_list = [
-            extract_nlp_features,
-            lambda x, y: [np.random.rand(len(tokenizer.word_index) + 1, 300) for _ in range(2)]
-        ]
-    else:
-        func_list = [extract_nlp_features, load_multiple_embeddings]
-    func_args_list = [(df_train, ), (tokenizer.word_index, embed_types)]
-
     logger.info('Start multiprocess nlp feature extraction and embedding matrices loading')
     with mp.Pool(processes=2) as p:
         results = p.map(parallel_apply, [
             (extract_nlp_features, (df_train,)),
-            (load_multiple_embeddings, (tokenizer.word_index, embed_types))
+            (load_multiple_embeddings, (tokenizer.word_index, embed_types, args['debug']))
         ])
 
-    df_train_extracted = results[0][1]
-    embedding_matrices = results[1][1]
+    df_train_extracted = results[0]
+    embedding_matrices = results[1]
     embedding_matrix = np.array(embedding_matrices).mean(0)
 
     nlp_columns = ['total_length', 'n_capitals', 'n_words', 'n_puncts', 'n_?', 'n_!', 'n_you']
