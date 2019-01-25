@@ -1,8 +1,6 @@
 import re
 import numpy as np
 import pandas as pd
-from functools import partial
-from multiprocessing import Pool
 
 from keras.preprocessing.text import Tokenizer
 
@@ -18,8 +16,8 @@ def load_data(input_dir, logger):
     return df_train, df_test
 
 
-def preprocess_text(df):
-    df['question_text'] = df['question_text'].apply(
+def preprocess_text(df, return_df=True):
+    processed_texts = df['question_text'].apply(
         lambda x: replace_typical_misspell(
             clean_numbers(
                 clean_text(
@@ -28,7 +26,11 @@ def preprocess_text(df):
             )
         )
     )
-    return df
+    if return_df:
+        df['question_text'] = processed_texts
+        return df
+    else:
+        return processed_texts
 
 
 def tokenize_text(df, logger, tokenizer=None):
@@ -45,8 +47,16 @@ def tokenize_text(df, logger, tokenizer=None):
     return sequence, tokenizer
 
 
-def get_seq_length(sequence):
-    return np.array([len(x) for x in sequence])
+def tokenize_texts(texts, logger, tokenizer=None):
+    if tokenizer is None:
+        logger.info('Fit tokenizer on train data')
+        tokenizer = Tokenizer()
+        tokenizer.fit_on_texts(list(texts))
+
+    logger.info('Tokenize text data')
+    sequences = tokenizer.texts_to_sequences(texts)
+
+    return sequences, tokenizer
 
 
 def extract_nlp_features(df):
@@ -88,9 +98,10 @@ def load_embeddings(embed_type, word_index):
     return embedding_matrix
 
 
-def load_multiple_embeddings(word_index, embed_types=(0, 1), max_workers=2):
-    with Pool(processes=max_workers) as p:
-        results = p.map(partial(load_embeddings, word_index=word_index), embed_types)
+def load_multiple_embeddings(word_index, embed_types=(0, 1, 2)):
+    results = []
+    for t in embed_types:
+        results.append(load_embeddings(t, word_index))
     return results
 
 
