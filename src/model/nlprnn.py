@@ -65,11 +65,8 @@ class NLPFeaturesDeepRNN(nn.Module):
 
         self.attention_layers = nn.ModuleList(attention_layers)
 
-        first_order_rnn_dim = sum([layer_type['dim'] * 2 for layer_type in rnn_layer_types])
+        first_order_rnn_dim = sum([layer_type['dim'] * 2 for layer_type in rnn_layer_types]) + 2 * rnn_out_dim
         second_order_rnn_dim = rnn_out_dim * sp.special.comb(3, 2)
-
-        import IPython
-        IPython.embed()
 
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
