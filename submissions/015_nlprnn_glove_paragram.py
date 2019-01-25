@@ -193,7 +193,7 @@ def load_embeddings(embed_type, word_index):
     return embedding_matrix
 
 
-def load_multiple_embeddings(word_index, embed_types=(0, 1), max_workers=2):
+def load_multiple_embeddings(word_index, embed_types=(0, 1)):
     results = []
     for e_type in embed_types:
         results.append(load_embeddings(e_type, word_index))
@@ -850,7 +850,7 @@ def main(logger, args):
     with logger.timer('Parallel nlp feature extraction and embedding matrices loading'), mp.Pool(processes=2) as p:
         results = p.map(parallel_apply, [
             (extract_nlp_features, (df_concat, )),
-            (load_multiple_embeddings, (tokenizer.word_index, embed_types, args['debug']))
+            (load_multiple_embeddings, (tokenizer.word_index, embed_types))
         ])
 
     df_extracted = results[0]
