@@ -101,11 +101,11 @@ class NLPFeaturesDeepRNN(nn.Module):
 
         x_rnn_attention = []
         for x, attention_layer in zip(x_rnn, self.attention_layers):
-            x_attention = attention_layer(x * x_mask)
+            x_attention = attention_layer(x * x_mask.squeeze(-1))
             x_rnn_attention.append(x_attention)
 
-        x_avg_pool = torch.mean(x_rnn[-1], 1)
-        x_max_pool, _ = torch.max(x_rnn[-1], 1)
+        x_avg_pool = torch.mean(x_rnn[-1] * x_mask, 1)
+        x_max_pool, _ = torch.max(x_rnn[-1] * x_mask, 1)
 
         x_first_order_rnn = [
             x_avg_pool,
