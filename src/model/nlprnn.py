@@ -116,8 +116,6 @@ class NLPFeaturesDeepRNN(nn.Module):
         for t_1, t_2 in itertools.combinations(x_first_order_rnn, 2):
             x_second_order_rnn.append(t_1 * t_2)
 
-        x_first_order_rnn
-
         x_upper = torch.cat(x_first_order_rnn + x_second_order_rnn + x_nlp, 1)
         for i, upper_layer in enumerate(self.upper_layers):
             x_upper = upper_layer(x_upper)
