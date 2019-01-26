@@ -873,8 +873,8 @@ def main(logger, args):
         df_extracted_test[col] = scaler.transform(
             df_extracted_test[col].values.astype(np.float32).reshape(-1, 1)).reshape(-1, )
 
-    x_nlp_train = [df_extracted_train[col].values[:len(df_train)].reshape(-1, 1) for col in nlp_columns]
-    x_nlp_test = [df_extracted_test[col].values[len(df_train):].reshape(-1, 1) for col in nlp_columns]
+    x_nlp_train = [df_extracted_train[col].values.reshape(-1, 1) for col in nlp_columns]
+    x_nlp_test = [df_extracted_test[col].values.reshape(-1, 1) for col in nlp_columns]
 
     # ===== training and evaluation loop ===== #
 
