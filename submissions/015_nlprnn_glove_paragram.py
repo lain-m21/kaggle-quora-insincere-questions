@@ -866,7 +866,7 @@ def main(logger, args):
     for col in nlp_columns:
         scaler = StandardScaler()
         features = np.concatenate([df_extracted_train[col].values.reshape(-1,),
-                                   df_extracted_test[col].values.reshape(-1,)])
+                                   df_extracted_test[col].values.reshape(-1,)]).reshape(-1, 1)
         scaler.fit(features)
         df_extracted_train[col] = scaler.transform(
             df_extracted_train[col].values.astype(np.float32).reshape(-1, 1)).reshape(-1, )
