@@ -69,7 +69,7 @@ def main(logger, args):
 
     df_train_extracted = results[0]
     embedding_matrices = results[1]
-    embedding_matrix = np.array(embedding_matrices).mean(0)
+    embedding_matrix = np.concatenate(embedding_matrices, axis=1).mean(0)
 
     nlp_columns = ['total_length', 'n_capitals', 'n_words', 'n_puncts', 'n_?', 'n_!', 'n_you']
     for col in nlp_columns:
@@ -110,7 +110,7 @@ def main(logger, args):
 
         {'nlp_layer_types': ({'activation': 'relu', 'dim': 16, 'dropout': 0.2},
                              {'activation': 'relu', 'dim': 16, 'dropout': 0.2}),
-         'rnn_layer_types': ({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
+         'rnn_layer_types': ({'type': 'lstm', 'dim': 32, 'num_layers': 1, 'dropout': 0.0},
                              {'type': 'gru', 'dim': 32, 'num_layers': 1, 'dropout': 0.0}),
          'upper_layer_types': ({'dim': 64, 'dropout': 0.3},
                                )
@@ -162,6 +162,20 @@ def main(logger, args):
                              {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
          'upper_layer_types': ({'dim': 64, 'dropout': 0.5},
                                {'dim': 64, 'dropout': 0.3})
+         },
+        {'nlp_layer_types': ({'activation': 'relu', 'dim': 8, 'dropout': 0.1},
+                             {'activation': 'relu', 'dim': 8, 'dropout': 0.1}),
+         'rnn_layer_types': ({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
+                             {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
+         'upper_layer_types': ({'dim': 64, 'dropout': 0.3},
+                               )
+         },
+        {'nlp_layer_types': ({'activation': 'relu', 'dim': 16, 'dropout': 0.2},
+                             {'activation': 'relu', 'dim': 8, 'dropout': 0.1}),
+         'rnn_layer_types': ({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
+                             {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
+         'upper_layer_types': ({'dim': 64, 'dropout': 0.3},
+                               )
          },
     ]
     model_name_base = 'NLPFeaturesDeepRNN'
