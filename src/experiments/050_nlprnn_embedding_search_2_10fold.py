@@ -112,7 +112,7 @@ def main(logger, args):
         model_name = model_name_base + f'_specId={spec_id}'
 
         embedding_matrix = np.concatenate(
-            [np.array([embedding_matrices[i] for i in spec['type']][0]).mean(0)] + [
+            [np.array([embedding_matrices[i] for i in spec['type'][0]]).mean(0)] + [
                 embedding_matrices[j] for j in spec['type'][1]
             ], axis=1
         )
