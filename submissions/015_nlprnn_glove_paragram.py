@@ -853,7 +853,7 @@ def main(logger, args):
     logger.info('Start multiprocess nlp feature extraction and embedding matrices loading')
     with logger.timer('Parallel nlp feature extraction and embedding matrices loading'), mp.Pool(processes=2) as p:
         results = p.map(parallel_apply, [
-            (extract_nlp_features, (df_train, df_test)),
+            (extract_nlp_features_train_test, (df_train, df_test)),
             (load_multiple_embeddings, (tokenizer.word_index, embed_types))
         ])
 
