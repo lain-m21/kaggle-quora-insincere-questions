@@ -166,6 +166,12 @@ def extract_nlp_features(df):
     return df
 
 
+def extract_nlp_features_train_test(df_train, df_test):
+    df_train = extract_nlp_features(df_train)
+    df_test = extract_nlp_features(df_test)
+    return df_train, df_test
+
+
 def load_embeddings(embed_type, word_index):
     if embed_type == 0:
         embedding_file = INPUT_DIR.joinpath('embeddings/glove.840B.300d/glove.840B.300d.txt')
@@ -844,27 +850,31 @@ def main(logger, args):
 
     embed_types = [0, 1]
 
-    df_concat = pd.concat([df_train, df_test])
-
     logger.info('Start multiprocess nlp feature extraction and embedding matrices loading')
     with logger.timer('Parallel nlp feature extraction and embedding matrices loading'), mp.Pool(processes=2) as p:
         results = p.map(parallel_apply, [
-            (extract_nlp_features, (df_concat, )),
+            (extract_nlp_features, (df_train, df_test)),
             (load_multiple_embeddings, (tokenizer.word_index, embed_types))
         ])
 
-    df_extracted = results[0]
+    df_extracted_train = results[0][0]
+    df_extracted_test = results[0][0]
     embedding_matrices = results[1]
     embedding_matrix = np.concatenate(embedding_matrices, axis=1)
 
     nlp_columns = ['total_length', 'n_capitals', 'n_words', 'n_puncts', 'n_?', 'n_!', 'n_you']
     for col in nlp_columns:
         scaler = StandardScaler()
-        df_extracted[col] = scaler.fit_transform(
-            df_extracted[col].values.astype(np.float32).reshape(-1, 1)).reshape(-1, )
+        features = np.concatenate([df_extracted_train[col].values.reshape(-1,),
+                                   df_extracted_test[col].values.reshape(-1,)])
+        scaler.fit(features)
+        df_extracted_train[col] = scaler.transform(
+            df_extracted_train[col].values.astype(np.float32).reshape(-1, 1)).reshape(-1, )
+        df_extracted_test[col] = scaler.transform(
+            df_extracted_test[col].values.astype(np.float32).reshape(-1, 1)).reshape(-1, )
 
-    x_nlp_train = [df_extracted[col].values[:len(df_train)].reshape(-1, 1) for col in nlp_columns]
-    x_nlp_test = [df_extracted[col].values[len(df_train):].reshape(-1, 1) for col in nlp_columns]
+    x_nlp_train = [df_extracted_train[col].values[:len(df_train)].reshape(-1, 1) for col in nlp_columns]
+    x_nlp_test = [df_extracted_test[col].values[len(df_train):].reshape(-1, 1) for col in nlp_columns]
 
     # ===== training and evaluation loop ===== #
 
