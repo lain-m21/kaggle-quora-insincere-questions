@@ -59,14 +59,13 @@ class NLPFeaturesDeepRNN(nn.Module):
         rnn_out_dim = rnn_layer_types[-1]['dim'] * 2
 
         attention_layers = []
-        for layer_type in rnn_layer_types:
-            dim = layer_type['dim'] * 2
-            attention_layers.append(Attention(dim, seq_len))
+        for _ in rnn_layer_types:
+            attention_layers.append(Attention(rnn_out_dim, seq_len))
 
         self.attention_layers = nn.ModuleList(attention_layers)
 
-        first_order_rnn_dim = sum([layer_type['dim'] * 2 for layer_type in rnn_layer_types]) + 2 * rnn_out_dim
-        second_order_rnn_dim = rnn_out_dim * sp.special.comb(3, 2)
+        first_order_rnn_dim = rnn_out_dim * (2 + len(rnn_layer_types))
+        second_order_rnn_dim = rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
 
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
@@ -109,16 +108,15 @@ class NLPFeaturesDeepRNN(nn.Module):
         x_max_pool, _ = torch.max(x_rnn[-1], 1)
 
         x_first_order_rnn = [
-            x_rnn_attention[-1],
             x_avg_pool,
             x_max_pool
-        ]
+        ] + x_rnn_attention
 
         x_second_order_rnn = []
         for t_1, t_2 in itertools.combinations(x_first_order_rnn, 2):
             x_second_order_rnn.append(t_1 * t_2)
 
-        x_first_order_rnn += x_rnn_attention[:-1]
+        x_first_order_rnn
 
         x_upper = torch.cat(x_first_order_rnn + x_second_order_rnn + x_nlp, 1)
         for i, upper_layer in enumerate(self.upper_layers):
