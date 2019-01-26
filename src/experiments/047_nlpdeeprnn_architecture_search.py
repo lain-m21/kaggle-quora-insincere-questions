@@ -69,7 +69,7 @@ def main(logger, args):
 
     df_train_extracted = results[0]
     embedding_matrices = results[1]
-    embedding_matrix = np.concatenate(embedding_matrices, axis=1).mean(0)
+    embedding_matrix = np.concatenate(embedding_matrices, axis=1)
 
     nlp_columns = ['total_length', 'n_capitals', 'n_words', 'n_puncts', 'n_?', 'n_!', 'n_you']
     for col in nlp_columns:
