@@ -7,6 +7,7 @@ import multiprocessing as mp
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
+from sklearn.externals import joblib
 from keras.preprocessing.sequence import pad_sequences
 
 import torch
@@ -227,6 +228,17 @@ def main(logger, args):
             'model_name': model_name
         }
         results.update(results_addition)
+
+        if args['save_preds']:
+            save_path = DATA_DIR.joinpath(f'predictions/{SCRIPT_NAME + "_" + model_name + ".pkl"}')
+            predictions = {
+                'proba': oof_preds_proba,
+                'mv': oof_mv_preds,
+                'opt': oof_opt_preds,
+                'reopt': oof_reopt_preds
+            }
+            joblib.dump(predictions, str(save_path))
+
         post_to_total_metrics_table(results, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
 
         logger.post(f'Spec ID: {spec_id}\nModel Spec: {spec}')
@@ -255,6 +267,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', default=512, type=int)
     parser.add_argument('--device-ids', metavar='N', type=int, nargs='+', default=[0])
     parser.add_argument('--max-workers', default=2, type=int)
+    parser.add_argument('--save-preds', action='store_true')
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args().__dict__
 
