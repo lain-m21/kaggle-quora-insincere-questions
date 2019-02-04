@@ -8,7 +8,7 @@ from .transformer import get_non_pad_mask
 
 
 class NLPFeaturesConcatDeepRNN(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, embed_drop=0.2, mask=False, nlp_factorize=False,
+    def __init__(self, embedding_matrix, seq_len, nlp_size, embed_drop=0.2, mask=False, nlp_factorize=False,
                  nlp_layer_types=({'activation': 'relu', 'dim': 128, 'dropout': 0.2},),
                  rnn_layer_types=({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
                                   {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
@@ -26,7 +26,7 @@ class NLPFeaturesConcatDeepRNN(nn.Module):
         nlp_layers = []
         for i, layer_type in enumerate(nlp_layer_types):
             if i == 0:
-                input_dim = 1
+                input_dim = nlp_size
             else:
                 input_dim = nlp_layer_types[i - 1]['dim']
             hidden_dim = layer_type['dim']
