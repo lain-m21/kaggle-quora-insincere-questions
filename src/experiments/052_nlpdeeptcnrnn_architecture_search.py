@@ -58,7 +58,7 @@ def main(logger, args):
 
     label_train = df_train['target'].values.reshape(-1, 1)
 
-    embed_types = [0, 2]
+    embed_types = [0, 1, 2]
 
     logger.info('Start multiprocess nlp feature extraction and embedding matrices loading')
     with mp.Pool(processes=2) as p:
