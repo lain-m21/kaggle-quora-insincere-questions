@@ -121,7 +121,7 @@ class NLPFeaturesTCNRNN(nn.Module):
             x_rnn.append(x)
 
         x_rnn_attention = []
-        for x, attention_layer in zip(x_rnn, self.attention_layers):
+        for x, attention_layer in zip(x_rnn, self.rnn_attention_layers):
             x_attention = attention_layer(x, x_mask.squeeze(-1))
             x_rnn_attention.append(x_attention)
 
@@ -134,7 +134,7 @@ class NLPFeaturesTCNRNN(nn.Module):
             x_tcn.append(x)
 
         x_tcn_attention = []
-        for x, attention_layer in zip(x_tcn, self.attention_layers):
+        for x, attention_layer in zip(x_tcn, self.tcn_attention_layers):
             x_attention = attention_layer(x, x_mask.squeeze(-1))
             x_tcn_attention.append(x_attention)
 
