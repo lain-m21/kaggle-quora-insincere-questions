@@ -78,10 +78,10 @@ class NLPFeaturesTCN(nn.Module):
     def __init__(self, embedding_matrix, seq_len, nlp_size, embed_drop=0.2, mask=True,
                  nlp_layer_types=({'activation': 'relu', 'dim': 16, 'dropout': 0.2},
                                   {'activation': 'relu', 'dim': 16, 'dropout': 0.2}),
-                 tcn_layer_types=({'num_channels': [256, 256, 300], 'kernel_size': 2, 'dropout': 0.2},
-                                  {'num_channels': [256, 256, 300], 'kernel_size': 3, 'dropout': 0.2},
-                                  {'num_channels': [256, 256, 300], 'kernel_size': 4, 'dropout': 0.2}),
-                 upper_layer_types=({'dim': 64, 'dropout': 0.3},)):
+                 tcn_layer_types=({'num_channels': [64, 64, 64], 'num_layers': 2, 'kernel_size': 3, 'dropout': 0.2},
+                                  ),
+                 upper_layer_types=({'dim': 64, 'dropout': 0.5},
+                                    {'dim': 64, 'dropout': 0.3})):
         super(NLPFeaturesTCN, self).__init__()
 
         self.mask = mask
@@ -112,7 +112,8 @@ class NLPFeaturesTCN(nn.Module):
             tcn_layers.append(TemporalConvolutionUnit(embedding_matrix.shape[1],
                                                       num_channels=layer_type['num_channels'],
                                                       kernel_size=layer_type['kernel_size'],
-                                                      dropout=layer_type['dropout']))
+                                                      dropout=layer_type['dropout'],
+                                                      num_layers=layer_type['num_layers']))
 
         self.tcn_layers = nn.ModuleList(tcn_layers)
         tcn_out_dim = tcn_layer_types[0]['num_channels'][-1]
