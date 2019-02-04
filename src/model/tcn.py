@@ -118,13 +118,13 @@ class NLPFeaturesTCN(nn.Module):
 
         self.attention_layers = nn.ModuleList(attention_layers)
 
-        first_order_rnn_dim = tcn_out_dim * (3 * len(tcn_layers))
-        second_order_rnn_dim = tcn_out_dim * sp.special.comb(3 * len(tcn_layers), 2)
+        first_order_dim = tcn_out_dim * (3 * len(tcn_layers))
+        second_order_dim = tcn_out_dim * sp.special.comb(3 * len(tcn_layers), 2)
 
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
             if i == 0:
-                input_dim = int(first_order_rnn_dim + second_order_rnn_dim + nlp_out_dim)
+                input_dim = int(first_order_dim + second_order_dim + nlp_out_dim)
             else:
                 input_dim = upper_layer_types[i - 1]['dim']
             hidden_dim = layer_type['dim']
