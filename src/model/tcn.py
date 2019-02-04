@@ -149,7 +149,7 @@ class NLPFeaturesTCN(nn.Module):
 
         x_tcn = []
         for i, tcn_layer in enumerate(self.tcn_layers):
-            x = tcn_layer(x_embedding)
+            x = tcn_layer(x_embedding.transpose(1, 2)).transpose(1, 2)
             x_tcn.append(x)
 
         x_tcn_attention = []
