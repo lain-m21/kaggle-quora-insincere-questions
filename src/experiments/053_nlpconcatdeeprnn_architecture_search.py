@@ -158,7 +158,7 @@ def main(logger, args):
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
             model = NLPFeaturesConcatDeepRNN(embedding_matrix, PADDING_LENGTH,
-                                             embed_drop=0.2, mask=True, nlp_factorize=spec['factorize'],
+                                             embed_drop=0.2, mask=True, nlp_factorize=spec['nlp_factorize'],
                                              nlp_layer_types=spec['nlp_layer_types'],
                                              rnn_layer_types=spec['rnn_layer_types'],
                                              upper_layer_types=spec['upper_layer_types'])
