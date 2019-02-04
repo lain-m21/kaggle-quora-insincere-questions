@@ -164,7 +164,7 @@ def main(logger, args):
                                        rnn_layer_types=spec['rnn_layer_types'],
                                        upper_layer_types=spec['upper_layer_types'])
 
-            steps_per_epoch = seq_train[index_train].shape[0] // batch_size
+            steps_per_epoch = seq_train_[index_train].shape[0] // batch_size
             scheduler_trigger_steps = steps_per_epoch * trigger
             step_size = steps_per_epoch * (epochs - trigger) // NUM_SNAPSHOTS
 
