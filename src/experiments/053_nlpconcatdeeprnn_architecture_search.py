@@ -138,6 +138,9 @@ def main(logger, args):
     model_name_base = 'NLPFeaturesConcatDeepRNN'
 
     for spec_id, spec in enumerate(model_specs):
+        if spec_id == 0:
+            continue
+
         model_name = model_name_base + f'_specId={spec_id}'
 
         skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=SEED)
@@ -221,7 +224,7 @@ def main(logger, args):
             }
             for res in eval_results:
                 res.update(eval_results_addition)
-                post_to_snapshot_metrics_table(data=res, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
+                # post_to_snapshot_metrics_table(data=res, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
 
             fold_results_addition = {
                 'date': datetime.now(),
