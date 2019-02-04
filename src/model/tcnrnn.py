@@ -84,9 +84,8 @@ class NLPFeaturesTCNRNN(nn.Module):
 
         self.tcn_attention_layers = nn.ModuleList(tcn_attention_layers)
 
-        first_order_dim = tcn_out_dim * (3 * len(tcn_layers)) + rnn_out_dim * (2 + len(rnn_layer_types))
-        second_order_dim = tcn_out_dim * sp.special.comb(3 * len(tcn_layers), 2) +\
-                           rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
+        first_order_dim = rnn_out_dim * (2 + len(rnn_layer_types)) + tcn_out_dim * (3 * len(tcn_layers))
+        second_order_dim = rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
 
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
@@ -149,11 +148,13 @@ class NLPFeaturesTCNRNN(nn.Module):
         x_first_order = [
             x_rnn_avg_pool,
             x_rnn_max_pool
-        ] + x_rnn_attention + x_tcn_attention + x_tcn_avg_pool + x_tcn_max_pool
+        ] + x_rnn_attention
 
         x_second_order = []
         for t_1, t_2 in itertools.combinations(x_first_order, 2):
             x_second_order.append(t_1 * t_2)
+
+        x_first_order += x_tcn_attention + x_tcn_avg_pool + x_tcn_max_pool
 
         x_upper = torch.cat(x_first_order + x_second_order + x_nlp, 1)
         for i, upper_layer in enumerate(self.upper_layers):
@@ -236,9 +237,8 @@ class NLPFeaturesConcatTCNRNN(nn.Module):
 
         self.tcn_attention_layers = nn.ModuleList(tcn_attention_layers)
 
-        first_order_dim = tcn_out_dim * (3 * len(tcn_layers)) + rnn_out_dim * (2 + len(rnn_layer_types))
-        second_order_dim = tcn_out_dim * sp.special.comb(3 * len(tcn_layers), 2) +\
-                           rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
+        first_order_dim = rnn_out_dim * (2 + len(rnn_layer_types)) + tcn_out_dim * (3 * len(tcn_layers))
+        second_order_dim = rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
 
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
@@ -301,11 +301,13 @@ class NLPFeaturesConcatTCNRNN(nn.Module):
         x_first_order = [
             x_rnn_avg_pool,
             x_rnn_max_pool
-        ] + x_rnn_attention + x_tcn_attention + x_tcn_avg_pool + x_tcn_max_pool
+        ] + x_rnn_attention
 
         x_second_order = []
         for t_1, t_2 in itertools.combinations(x_first_order, 2):
             x_second_order.append(t_1 * t_2)
+
+        x_first_order += x_tcn_attention + x_tcn_avg_pool + x_tcn_max_pool
 
         x_upper = torch.cat(x_first_order + x_second_order + x_nlp, 1)
         for i, upper_layer in enumerate(self.upper_layers):
