@@ -83,6 +83,7 @@ def main(logger, args):
             df_train_extracted[col].values.astype(np.float32).reshape(-1, 1)).reshape(-1, )
 
     x_nlp = np.concatenate([df_train_extracted[col].values.reshape(-1, 1) for col in nlp_columns], axis=1)
+    nlp_size = x_nlp.shape[1]
 
     # ===== training and evaluation loop ===== #
     device_ids = args['device_ids']
@@ -157,7 +158,7 @@ def main(logger, args):
             }
             y_train, y_valid = label_train[index_train].astype(np.float32), label_train[index_valid].astype(np.float32)
 
-            model = NLPFeaturesConcatDeepRNN(embedding_matrix, PADDING_LENGTH,
+            model = NLPFeaturesConcatDeepRNN(embedding_matrix, PADDING_LENGTH, nlp_size,
                                              embed_drop=0.2, mask=True, nlp_factorize=spec['nlp_factorize'],
                                              nlp_layer_types=spec['nlp_layer_types'],
                                              rnn_layer_types=spec['rnn_layer_types'],
