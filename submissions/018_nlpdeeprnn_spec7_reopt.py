@@ -919,6 +919,13 @@ def main(logger, args):
             'sampler_type': 'normal',
             'seed': SEED * i
         }
+        spec = {'nlp_layer_types': ({'activation': 'relu', 'dim': 16, 'dropout': 0.2},
+                                    {'activation': 'relu', 'dim': 16, 'dropout': 0.2}),
+                'rnn_layer_types': ({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
+                                    {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
+                'upper_layer_types': ({'dim': 64, 'dropout': 0.5},
+                                      {'dim': 64, 'dropout': 0.3})
+                }
         test_preds = train_nlpdeeprnn(
             seed=SEED * i,
             seq_train=seq_train,
@@ -929,6 +936,7 @@ def main(logger, args):
             thresholds=THRESHOLDS,
             mode=MODE,
             config=config,
+            spec=spec,
             embedding_matrix=embedding_matrix,
             logger=logger
         )
