@@ -68,6 +68,9 @@ def extract_nlp_features(df):
     df['n_?'] = df['question_text'].apply(lambda x: sum(1 for c in x if c == '?'))
     df['n_!'] = df['question_text'].apply(lambda x: sum(1 for c in x if c == '!'))
     df['n_you'] = df['question_text'].apply(lambda x: len(re.findall(r'you[^~a-z]', x.lower())))
+    df['n_5w1h'] = df['question_text'].apply(lambda x: len(set(x.lower().split()).intersection({'what', 'why',
+                                                                                                'when', 'who',
+                                                                                                'where', 'how'})))
     return df
 
 
