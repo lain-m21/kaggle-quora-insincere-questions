@@ -165,7 +165,7 @@ class NLPFeaturesTCNRNN(nn.Module):
 
 
 class NLPFeaturesConcatTCNRNN(nn.Module):
-    def __init__(self, embedding_matrix, seq_len, embed_drop=0.2, mask=True,
+    def __init__(self, embedding_matrix, seq_len, embed_drop=0.2, mask=True, nlp_factorize=False,
                  nlp_layer_types=({'activation': 'relu', 'dim': 128, 'dropout': 0.2},),
                  tcn_layer_types=({'num_channels': [16, 16, 16], 'kernel_size': 2, 'dropout': 0.2},
                                   {'num_channels': [16, 16, 16], 'kernel_size': 3, 'dropout': 0.2},
@@ -177,6 +177,7 @@ class NLPFeaturesConcatTCNRNN(nn.Module):
         super(NLPFeaturesConcatTCNRNN, self).__init__()
 
         self.mask = mask
+        self.nlp_factorize = nlp_factorize
         self.embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
         self.embedding.weight = nn.Parameter(torch.tensor(embedding_matrix, dtype=torch.float32))
         self.embedding.weight.requires_grad = False
@@ -237,13 +238,17 @@ class NLPFeaturesConcatTCNRNN(nn.Module):
 
         self.tcn_attention_layers = nn.ModuleList(tcn_attention_layers)
 
-        first_order_dim = rnn_out_dim * (2 + len(rnn_layer_types)) + tcn_out_dim * (3 * len(tcn_layers))
-        second_order_dim = rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
+        if nlp_factorize:
+            first_order_dim = rnn_out_dim * (2 + len(rnn_layer_types) + 1)
+            second_order_dim = rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types) + 1), 2)
+        else:
+            first_order_dim = rnn_out_dim * (2 + len(rnn_layer_types)) + nlp_out_dim
+            second_order_dim = rnn_out_dim * sp.special.comb((2 + len(rnn_layer_types)), 2)
 
         upper_layers = []
         for i, layer_type in enumerate(upper_layer_types):
             if i == 0:
-                input_dim = int(first_order_dim + second_order_dim + nlp_out_dim)
+                input_dim = int(first_order_dim + second_order_dim + tcn_out_dim * (3 * len(tcn_layers)))
             else:
                 input_dim = upper_layer_types[i - 1]['dim']
             hidden_dim = layer_type['dim']
@@ -263,8 +268,8 @@ class NLPFeaturesConcatTCNRNN(nn.Module):
         x_mask = get_non_pad_mask(inputs['text'])
 
         x_nlp = inputs['nlp']
-        for i, layers in enumerate(self.nlp_layers):
-            x_nlp = [layer(x) for x, layer in zip(x_nlp, layers)]
+        for layer in self.nlp_layers:
+            x_nlp = layer(x_nlp)
 
         x_rnn = []
         x = x_embedding
@@ -303,13 +308,19 @@ class NLPFeaturesConcatTCNRNN(nn.Module):
             x_rnn_max_pool
         ] + x_rnn_attention
 
+        if self.nlp_factorize:
+            x_first_order += [x_nlp]
+
         x_second_order = []
         for t_1, t_2 in itertools.combinations(x_first_order, 2):
             x_second_order.append(t_1 * t_2)
 
         x_first_order += x_tcn_attention + x_tcn_avg_pool + x_tcn_max_pool
 
-        x_upper = torch.cat(x_first_order + x_second_order + x_nlp, 1)
+        if self.nlp_factorize:
+            x_upper = torch.cat(x_first_order + x_second_order, 1)
+        else:
+            x_upper = torch.cat(x_first_order + x_second_order + [x_nlp], 1)
         for i, upper_layer in enumerate(self.upper_layers):
             x_upper = upper_layer(x_upper)
 
