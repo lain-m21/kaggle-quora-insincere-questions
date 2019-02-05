@@ -215,7 +215,7 @@ def main(logger, args):
             }
             for res in eval_results:
                 res.update(eval_results_addition)
-                post_to_snapshot_metrics_table(data=res, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
+                # post_to_snapshot_metrics_table(data=res, project_id=BQ_PROJECT_ID, dataset_name=BQ_DATASET)
 
             fold_results_addition = {
                 'date': datetime.now(),
