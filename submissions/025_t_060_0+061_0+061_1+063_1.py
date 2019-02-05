@@ -982,7 +982,7 @@ def main(logger, args):
         batch_size = args['batch_size'] * len(device_ids)
         trigger = TRIGGER
 
-        steps_per_epoch = seq_train.shape[0] // batch_size
+        steps_per_epoch = len(df_train) // batch_size
         scheduler_trigger_steps = steps_per_epoch * trigger
         step_size = steps_per_epoch * (EPOCHS - trigger) // NUM_SNAPSHOTS
 
