@@ -1434,9 +1434,9 @@ def main(logger, args):
             'rnn_layer_types': ({'type': 'lstm', 'dim': 64, 'num_layers': 1, 'dropout': 0.0},
                                 {'type': 'gru', 'dim': 64, 'num_layers': 1, 'dropout': 0.0}),
             'upper_layer_types': ({'dim': 64, 'dropout': 0.5},
-                                   {'dim': 64, 'dropout': 0.5},
-                                   {'dim': 64, 'dropout': 0.3}),
-            'nlp_factorize': False},
+                                  {'dim': 64, 'dropout': 0.5},
+                                  {'dim': 64, 'dropout': 0.3}),
+            'nlp_factorize': False}
 
     test_preds = train_nlpcocnatdeeprnn(
         seed=SEED,
@@ -1555,7 +1555,7 @@ def main(logger, args):
     test_preds_total.append(test_preds)
 
     # ***** model 4 - 060_1 ***** #
-    logger.info(f'Start train and prediction 2 / 4')
+    logger.info(f'Start train and prediction 4 / 4')
 
     config = {
         'epochs': EPOCHS,
